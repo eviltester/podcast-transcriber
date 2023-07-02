@@ -24,3 +24,15 @@ def download_if_not_exists(downloadUrl, downloadPath):
 
     print("Downloaded to " + downloadPath)
     return full_download_path
+
+class DownloadFile:
+    def __init__(self, podcast_name, episode_title, download_folder, url_to_download):
+        self.podcast_name = podcast_name
+        self.episode_title = episode_title
+        self.download_folder = download_folder
+        self.url = url_to_download
+
+class DownloadQueue:
+    def __init__(self):
+        self.to_download = []
+        self.downloaded = []
