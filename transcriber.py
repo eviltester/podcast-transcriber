@@ -2,17 +2,33 @@ import whisper
 import os
 from textoutput import output_raw_text_to_file, output_formatted_text_with_line_gaps
 from srtoutput import output_srt_file
+from downloads import download_if_not_exists
 
 #
 # Main App code
 #
 
+
+'''
+Todo List
+TODO: Given an list of RSS feeds parse and process
+TODO: Given an RSS feed parse and find new episodes, to add to download queue
+TODO: Given a list of urls in a download queue, download and parse the files
+- Given a url, download the mp3 and transcribe
+'''
+
+
 # Data and Configuration
-inputAudioFile = "/Users/alanrichardson/Downloads/testpodcast.mp3"
+downloadUrl="https://downloads.pod.co/558da60d-be59-43be-afee-67c93f05c5e0/4c20f2bf-814a-47d3-90ca-42ede6325c2e.mp3"
+downloadPath = "/Users/alanrichardson/Downloads"
 outputPath = "/Users/alanrichardson/Documents/docs-git/dev/python/podcast-transcriptions"
 outputFileName = "testpodcast-transcription"
 whisperModel = "base"
 outputFilePath = os.path.join(outputPath, outputFileName)
+
+
+# download the next podcast
+inputAudioFile = download_if_not_exists(downloadUrl, downloadPath)
 
 # Process the audio file
 print("Loading Whisper Model " + whisperModel)
