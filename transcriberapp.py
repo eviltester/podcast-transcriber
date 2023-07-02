@@ -39,15 +39,15 @@ download_queue.add(DownloadFile("Test Podcast", "episode two", downloadPath, "ht
 next_download = download_queue.get_next()
 # download and transcribe the next podcast
 while next_download != None:
-    print(yaml.dump(download_queue, indent=2))
+    #print(yaml.dump(download_queue, indent=2))
+
     inputAudioFile = download_if_not_exists(next_download.url, next_download.download_folder)
-    # transcribe(inputAudioFile, outputPath, outputFileName)
+
+    transcribe(inputAudioFile, outputPath, outputFileName)
+
     download_queue.mark_as_downloaded(next_download)
     download_queue.save_caches()
-
     next_download = download_queue.get_next()
-
-    # print(yaml.dump(download_queue, indent=2))
 
 
 print("All Done")
