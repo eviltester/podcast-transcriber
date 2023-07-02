@@ -14,16 +14,17 @@ def output_formatted_text_with_line_gaps(fullOutputFilePath, segments, outputFil
         para = ""
         for segment in segments:
             line = segment["text"].strip()
-            if line[0].isupper():
-                # need a new para
-                if(len(para)>0):
-                    # write out old para
-                    f.write(para + "\n\n")
-                    para = ""
-                # create new para
-                para = para + line
-            else:
-                # it is a line to add to old para
-                para = para + " " + line
+            if(len(line)>0):
+                if line[0].isupper():
+                    # need a new para
+                    if(len(para)>0):
+                        # write out old para
+                        f.write(para + "\n\n")
+                        para = ""
+                    # create new para
+                    para = para + line
+                else:
+                    # it is a line to add to old para
+                    para = para + " " + line
         if(len(para)>0):
             f.write(para + "\n")
