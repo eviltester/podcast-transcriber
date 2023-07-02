@@ -11,13 +11,15 @@ from transcriber import transcribe
 
 '''
 Todo List
+TODO: configurable delete downloaded files after transcription (keep reference in downloaded queue)
 TODO: download files into podcast specific named folders
+TODO: separate parse and download into separate processes (transcription queue separate from download queue)
+TODO: separate parse and download into separate actions
 TODO: Given an list of RSS feeds parse and process
 TODO: Given an RSS feed parse and find new episodes, to add to download queue
-TODO: Given a list of urls in a download queue, download and parse the files
-- Create a basic queue list and process
-- TODO: persists the queue to files to have history of downloads, this allows deleting mp3s after transcription
-
+- Given a list of urls in a download queue, download and parse the files
+   - Create a basic queue list and process
+   - Persists the queue to files to have history of downloads, this allows deleting mp3s after transcription
 - Given a url, download the mp3 and transcribe
 '''
 
