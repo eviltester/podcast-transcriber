@@ -9,6 +9,22 @@ class RssCachedShow:
         self.show_notes_url = show_notes_url
         self.download_url = download_url
 
+
+class RssListReader:
+    # CSV file with
+    # feed name, feedurl
+    def __init__(self, filepath):
+        self.filepath = filepath
+        self.feeds = []
+
+    def loadFeeds(self):
+        with open(self.filepath, newline='') as csvfile:
+            rss_list_reader = csv.reader(csvfile, delimiter=',', quotechar='"')
+            for row in rss_list_reader:
+             
+                self.feeds.append(RssFeed(feedname = row[0], feed_rss_url=row[1]))
+
+
 class RssFeed:
     def __init__(self, feedname, feed_rss_url):
         self.feedname = feedname

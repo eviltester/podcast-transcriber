@@ -2,7 +2,7 @@
 import yaml
 import os
 from downloads import DownloadFile, DownloadQueue, download_if_not_exists
-from rss import RssFeed
+from rss import RssFeed, RssListReader
 from transcriber import Transcriber
 
 #
@@ -13,13 +13,19 @@ from transcriber import Transcriber
 '''
 Todo List
 TODO: configurable delete downloaded files after transcription (keep reference in downloaded queue)
+TODO: command line args to override config files and defaults
+TODO: config files to configure and override defaults
 TODO: separate parse and download into separate processes (transcription queue separate from download queue)
 TODO: separate parse and download into separate actions
-TODO: Given a list of RSS feeds parse and process
 TODO: download files into podcast named folders
 TODO: allow start and stopping mid process
 TODO: Create a transcription queue and transcribed queue
 TODO: pick up queue items and start from queues
+TODO: output the files to episode folders
+TODO: output more meta data from the RSS file into the episode folders e.g. episode number, length, etc.
+TODO: use the utils and the built in output to text, srt, vtt options
+TODO: investigate if passing in language as english is faster or if using base.en is faster
+- Given a list of RSS feeds parse and process
 - Given an RSS feed parse and find new episodes, to add to download queue
    - download and parse rss feed
    - create a cache for each rss feed of the items 'seen' in the previous rss feed
@@ -42,25 +48,45 @@ download_csv_cache = os.path.join(csvCaches, "download_queue.csv")
 downloaded_csv_cache = os.path.join(csvCaches, "downloaded_items.csv")
 
 # TODO: create a Podcast class and a PodcastEpisode class
-#rss_feed = RssFeed("The EvilTester Show", "https://feed.pod.co/the-evil-tester-show")
-rss_feed = RssFeed("The Testing Peers", "https://feeds.buzzsprout.com/1078751.rss")
-rss_feed.load()
 
-rss_feed.load_seen_cache(outputPath)
-rss_feed.find_new_rss_items()
-for item in rss_feed.new_items:
-    print (item.title + " - " + item.download_url)
+#Add a file called podcasts.csv in the current folder with the list of podcasts to load
+# e.g.
+'''
+"The EvilTester Show","https://feed.pod.co/the-evil-tester-show"
+"The Testing Peers","https://feeds.buzzsprout.com/1078751.rss"
+'''
+defaultPodcastsCSV = os.path.join(os.getcwd(),"podcasts.csv")
+rssList = RssListReader(defaultPodcastsCSV)
+if(os.path.exists(defaultPodcastsCSV)):
+    rssList.loadFeeds()
+else:
+    # add some defaults
+    print("Could not find a podcasts.csv file in current directory, create one and add some podcasts to download")
+    print("e.g.")
+    print("The EvilTester Show,https://feed.pod.co/the-evil-tester-show")
+    print("The Testing Peers,https://feeds.buzzsprout.com/1078751.rss")
+    rssList.feeds.append(RssFeed("The EvilTester Show", "https://feed.pod.co/the-evil-tester-show"))
+    rssList.feeds.append(RssFeed("The Testing Peers", "https://feeds.buzzsprout.com/1078751.rss"))
 
+# Scan for new episodes and add to download queue
 download_queue = DownloadQueue(download_csv_cache, downloaded_csv_cache)
 
-# add new items to download queue
-for item in rss_feed.new_items:
-    download_queue.add(DownloadFile(item.feedname, item.title, downloadPath, item.download_url))
-    rss_feed.seen_items.append(item)
+for rss_feed in rssList.feeds:
+    rss_feed.load()
 
-# write rss cache file
-download_queue.save_caches()
-rss_feed.write_seen_cache(outputPath)
+    rss_feed.load_seen_cache(outputPath)
+    rss_feed.find_new_rss_items()
+    for item in rss_feed.new_items:
+        print (item.title + " - " + item.download_url)
+
+        # add new items to download queue
+        for item in rss_feed.new_items:
+            download_queue.add(DownloadFile(item.feedname, item.title, downloadPath, item.download_url))
+            rss_feed.seen_items.append(item)
+
+        # write rss cache file
+        download_queue.save_caches()
+        rss_feed.write_seen_cache(outputPath)
 
 next_download = download_queue.get_next()
 
