@@ -1,7 +1,7 @@
 # pyyaml just for printing for debugging convenience
 import yaml
 import os
-from downloads import DownloadFile, DownloadQueue, download_if_not_exists
+from downloads import DownloadFile, DownloadQueue, download_if_not_exists, filenameify
 from rss import RssFeed, RssListReader
 from transcriber import Transcriber
 
@@ -98,8 +98,8 @@ while next_download != None:
 
     inputAudioFile = download_if_not_exists(next_download.url, next_download.download_folder)
 
-    transcriptionFileName = next_download.episode_title.lower().replace(" ","-")
-    transcriptionOutputFolderName = next_download.podcast_name.lower().replace(" ","-")
+    transcriptionFileName = filenameify(next_download.episode_title)
+    transcriptionOutputFolderName = filenameify(next_download.podcast_name)
     transcriptionOutputFolder = os.path.join(outputPath, transcriptionOutputFolderName)
     if not os.path.exists(transcriptionOutputFolder):
         os.makedirs(transcriptionOutputFolder)

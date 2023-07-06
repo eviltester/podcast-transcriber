@@ -2,6 +2,10 @@ import csv
 import requests
 import os
 from urllib.parse import urlparse
+import re
+
+def filenameify(aString):
+    return re.sub('[^A-Za-z0-9_-]',"-",aString.lower())
 
 def download_if_not_exists(downloadUrl, downloadPath):
 

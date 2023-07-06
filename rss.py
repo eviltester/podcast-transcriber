@@ -2,6 +2,8 @@ import csv
 import feedparser
 from os import path
 
+from downloads import filenameify
+
 class RssCachedShow:
     def __init__(self, feedname, title, show_notes_url, download_url):
         self.feedname = feedname
@@ -39,7 +41,7 @@ class RssFeed:
         self.parsed_feed = feedparser.parse(self.feed_rss_url)
 
     def __cached_file_name(self):
-        cache_file_name = self.feedname.lower().replace(" ","-")
+        cache_file_name = filenameify(self.feedname)
         cache_file_name = cache_file_name + ".rss-seen.csv"
         return cache_file_name
     
