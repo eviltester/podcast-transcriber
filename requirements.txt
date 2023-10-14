@@ -1,3 +1,7 @@
 openai-whisper
 pyyaml
 feedparser
+torch
+transformers
+langchain
+tiktoken
