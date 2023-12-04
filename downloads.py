@@ -13,7 +13,7 @@ def download_if_not_exists(downloadUrl, downloadPath):
     # from download url get the filename
     parsed_url = urlparse(downloadUrl)
     path = parsed_url.path
-    filename = os.path.basename(path)
+    filename = filenameify(os.path.basename(path))
 
     # exit if the filename exists in the download directory
     full_download_path = os.path.join(downloadPath, filename)

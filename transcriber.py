@@ -1,7 +1,10 @@
 import whisper
-from os.path import join
+import os
 from textoutput import output_raw_text_to_file, output_formatted_text_with_line_gaps
 from srtoutput import output_srt_file
+
+# official whisper output utils
+from whisper.utils import get_writer
 
 class Transcriber():
 
@@ -18,7 +21,34 @@ class Transcriber():
             self.initialized_model_name = whisper_model
             self.initialized_model = whisper.load_model(whisper_model)
 
-        outputFilePath = join(outputFolder, outputFileName)
+        outputFileFolder = os.path.join(outputFolder, outputFileName)
+
+        # old versions of the app would write directly to the folder
+        # fix that here
+        looseFiles = [f for f in os.listdir(outputFolder) if os.path.isfile(os.path.join(outputFolder, f))]
+        for looseFile in looseFiles:
+            print("Migration: moving file to subfolder " + looseFile)
+            fullName = os.path.basename(looseFile)
+            fileName = os.path.splitext(fullName)
+            fileNameNoBase = fileName[0]
+            # remove the -base from end
+            if(fileNameNoBase.endswith(".blob")):
+                fileNameNoBase = fileNameNoBase[:-5]
+            if(fileNameNoBase.endswith("-base")):
+                fileNameNoBase = fileNameNoBase[:-5]
+            # create the folder    
+            looseOutputFileFolder = os.path.join(outputFolder, fileNameNoBase)
+            if not os.path.exists(looseOutputFileFolder):
+                os.makedirs(looseOutputFileFolder)
+            # move the file
+            os.replace(os.path.join(outputFolder,looseFile), os.path.join(looseOutputFileFolder, fullName))
+            
+
+        # output all the files to a folder
+        if not os.path.exists(outputFileFolder):
+            os.makedirs(outputFileFolder)
+
+        outputFilePath = os.path.join(outputFileFolder, outputFileName)    
 
         '''
         options to the transcribe are visible in the code
@@ -42,6 +72,13 @@ class Transcriber():
         result = self.initialized_model.transcribe(inputAudioFile)
 
         print("Writing transcript " + outputFileName)
+        print("To... " + outputFilePath)
         output_raw_text_to_file(outputFilePath + "-" + whisper_model, result["text"])
         output_formatted_text_with_line_gaps(outputFilePath + "-" + whisper_model, result["segments"])
         output_srt_file(outputFilePath + "-" + whisper_model, result["segments"])
+
+        # try the official outputs instead of our hacks
+        writer = get_writer("all", str(outputFileFolder))
+        writer(result, outputFileName + "out")
+        
+

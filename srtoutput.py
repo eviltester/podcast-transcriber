@@ -30,7 +30,7 @@ def srt_time_line_from(tstart=0.0, tend=0.1):
     return timeStr
 
 def output_srt_file(fullOutputFilePath, segments):
-    with open(fullOutputFilePath + ".srt", mode="wt") as f:
+    with open(fullOutputFilePath + ".subtitles.srt", mode="wt", encoding='utf-8') as f:
         for segment in segments:
             # the time segment sequential number
             f.write(str(segment["id"]) + "\n")

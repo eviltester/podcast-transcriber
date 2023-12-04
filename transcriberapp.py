@@ -17,13 +17,13 @@ TODO: command line args to override config files and defaults
 TODO: config files to configure and override defaults
 TODO: separate parse and download into separate processes (transcription queue separate from download queue)
 TODO: separate parse and download into separate actions
-TODO: download files into podcast named folders
+- download files into podcast named folders
 TODO: allow start and stopping mid process
 TODO: Create a transcription queue and transcribed queue
 TODO: pick up queue items and start from queues
-TODO: output the files to episode folders
+- output the files to episode folders
 TODO: output more meta data from the RSS file into the episode folders e.g. episode number, length, etc.
-TODO: use the utils and the built in output to text, srt, vtt options
+- use the utils and the built in output to text, srt, vtt options
 TODO: investigate if passing in language as english is faster or if using base.en is faster
 - Given a list of RSS feeds parse and process
 - Given an RSS feed parse and find new episodes, to add to download queue
@@ -35,17 +35,34 @@ TODO: investigate if passing in language as english is faster or if using base.e
    - Create a basic queue list and process
    - Persists the queue to files to have history of downloads, this allows deleting mp3s after transcription
 - Given a url, download the mp3 and transcribe
+TODO: try https://github.com/huggingface/distil-whisper
 '''
 
 # Data and Configuration
-downloadPath = "/Users/alanrichardson/Downloads"
-outputPath = "/Users/alanrichardson/Documents/docs-git/dev/python/podcast-transcriptions"
+print(os.name)
+if os.name == 'nt':
+    print("running on windows")
+    downloadPath = "d:/downloads"
+    outputPath = "d:/git/dev/python/podcast-transcriptions"
+else:
+    print("running on mac?")
+    # mac config - TODO: move to a config file and start app with config file name
+    downloadPath = "/Users/alanrichardson/Downloads"
+    outputPath = "/Users/alanrichardson/Documents/docs-git/dev/python/podcast-transcriptions"
+
 outputFileName = "testpodcast-transcription"
 whisperModel = "base"
 
 csvCaches = outputPath
 download_csv_cache = os.path.join(csvCaches, "download_queue.csv")
 downloaded_csv_cache = os.path.join(csvCaches, "downloaded_items.csv")
+
+print("----")
+print("CONFIG:")
+print("Download Path: " + downloadPath)
+print("Output Path: " + outputPath)
+print("----")
+
 
 # TODO: create a Podcast class and a PodcastEpisode class
 
@@ -54,6 +71,7 @@ downloaded_csv_cache = os.path.join(csvCaches, "downloaded_items.csv")
 '''
 "The EvilTester Show","https://feed.pod.co/the-evil-tester-show"
 "The Testing Peers","https://feeds.buzzsprout.com/1078751.rss"
+"AB Testing","https://anchor.fm/s/45580f58/podcast/rss"
 '''
 defaultPodcastsCSV = os.path.join(os.getcwd(),"podcasts.csv")
 rssList = RssListReader(defaultPodcastsCSV)
@@ -67,6 +85,7 @@ else:
     print("The Testing Peers,https://feeds.buzzsprout.com/1078751.rss")
     rssList.feeds.append(RssFeed("The EvilTester Show", "https://feed.pod.co/the-evil-tester-show"))
     rssList.feeds.append(RssFeed("The Testing Peers", "https://feeds.buzzsprout.com/1078751.rss"))
+    rssList.feeds.append(RssFeed("AB Testing", "https://anchor.fm/s/45580f58/podcast/rss"))
 
 # Scan for new episodes and add to download queue
 download_queue = DownloadQueue(download_csv_cache, downloaded_csv_cache)
@@ -96,7 +115,7 @@ transcriber = Transcriber()
 while next_download != None:
     #print(yaml.dump(download_queue, indent=2))
 
-    inputAudioFile = download_if_not_exists(next_download.url, next_download.download_folder)
+    inputAudioFile = download_if_not_exists(next_download.url, downloadPath)
 
     transcriptionFileName = filenameify(next_download.episode_title)
     transcriptionOutputFolderName = filenameify(next_download.podcast_name)

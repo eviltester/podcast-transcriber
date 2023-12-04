@@ -4,13 +4,13 @@
 
 # output a blob of text
 def output_raw_text_to_file(fullOutputFilePath, text, outputFileExtension = ".blob.txt"):
-    with open(fullOutputFilePath + outputFileExtension, mode="wt") as f:
+    with open(fullOutputFilePath + outputFileExtension, mode="wt", encoding='utf-8') as f:
         f.write(text)
 
 
 # output formatted text with line gaps
-def output_formatted_text_with_line_gaps(fullOutputFilePath, segments, outputFileExtension = ".txt"):
-    with open(fullOutputFilePath + outputFileExtension, mode="wt") as f:
+def output_formatted_text_with_line_gaps(fullOutputFilePath, segments, outputFileExtension = ".para.txt"):
+    with open(fullOutputFilePath + outputFileExtension, mode="wt", encoding='utf-8') as f:
         para = ""
         for segment in segments:
             line = segment["text"].strip()
