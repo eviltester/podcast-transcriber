@@ -1,5 +1,6 @@
 import whisper
 import os
+import time
 from textoutput import output_raw_text_to_file, output_formatted_text_with_line_gaps
 from srtoutput import output_srt_file
 
@@ -17,9 +18,12 @@ class Transcriber():
         # loading the model takes time so only do this once, and only do when transcribing
         if(self.initialized_model_name != whisper_model or self.initialized_model == None):
             # Process the audio file
+            modelLoadingStartTime = time.time()
             print("Loading Whisper Model " + whisper_model)
             self.initialized_model_name = whisper_model
             self.initialized_model = whisper.load_model(whisper_model)
+            modelLoadingEndTime = time.time()
+            print('TIME: to load model - ', modelLoadingEndTime - modelLoadingStartTime, 'seconds')
 
         outputFileFolder = os.path.join(outputFolder, outputFileName)
 
@@ -69,10 +73,15 @@ class Transcriber():
         - https://ramsrigoutham.medium.com/openais-whisper-7-must-know-libraries-and-add-ons-built-on-top-of-it-10825bd08f76
         '''
         print("Transcribing File " + inputAudioFile)
+        transcribeStartTime  = time.time()
         result = self.initialized_model.transcribe(inputAudioFile)
+        transcribeEndTime  = time.time()
+        print('TIME: to transcribe - ', transcribeEndTime - transcribeStartTime, 'seconds')
+
 
         print("Writing transcript " + outputFileName)
         print("To... " + outputFilePath)
+        outputStartTime  = time.time()
         output_raw_text_to_file(outputFilePath + "-" + whisper_model, result["text"])
         output_formatted_text_with_line_gaps(outputFilePath + "-" + whisper_model, result["segments"])
         output_srt_file(outputFilePath + "-" + whisper_model, result["segments"])
@@ -80,5 +89,9 @@ class Transcriber():
         # try the official outputs instead of our hacks
         writer = get_writer("all", str(outputFileFolder))
         writer(result, outputFileName + "out")
+
+        outputEndTime  = time.time()
+        print('TIME: to output - ', outputEndTime - outputStartTime, 'seconds')
+
         
 

@@ -9,7 +9,7 @@ def output_raw_text_to_file(fullOutputFilePath, text, outputFileExtension = ".bl
 
 
 # output formatted text with line gaps
-def output_formatted_text_with_line_gaps(fullOutputFilePath, segments, outputFileExtension = ".para.txt"):
+def output_formatted_text_with_line_gaps(fullOutputFilePath, segments, outputFileExtension = ".para.md"):
     with open(fullOutputFilePath + outputFileExtension, mode="wt", encoding='utf-8') as f:
         para = ""
         for segment in segments:
