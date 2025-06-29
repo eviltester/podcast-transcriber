@@ -65,7 +65,8 @@ print("----")
 
 
 # TODO: create a Podcast class and a PodcastEpisode class
-
+# find a podcast rss feed https://castos.com/tools/find-podcast-rss-feed/
+# find a podcast rss feed from apple podcast link https://www.labnol.org/podcast
 #Add a file called podcasts.csv in the current folder with the list of podcasts to load
 # e.g.
 '''
@@ -83,9 +84,20 @@ else:
     print("e.g.")
     print("The EvilTester Show,https://feed.pod.co/the-evil-tester-show")
     print("The Testing Peers,https://feeds.buzzsprout.com/1078751.rss")
+    # TODO: add a category attribute
+    # Testing podcasts
     rssList.feeds.append(RssFeed("The EvilTester Show", "https://feed.pod.co/the-evil-tester-show"))
     rssList.feeds.append(RssFeed("The Testing Peers", "https://feeds.buzzsprout.com/1078751.rss"))
     rssList.feeds.append(RssFeed("AB Testing", "https://anchor.fm/s/45580f58/podcast/rss"))
+    rssList.feeds.append(RssFeed("Test Guild", "https://testtalks.libsyn.com/rss"))
+    rssList.feeds.append(RssFeed("The Vernon Richard Show", "https://feeds.transistor.fm/the-vernon-richard-show"))
+    rssList.feeds.append(RssFeed("The Testing Show", "https://thetestingshow.libsyn.com/rss"))
+    rssList.feeds.append(RssFeed("The Engineering Quality Podcast", "https://anchor.fm/s/f6a276e0/podcast/rss"))
+    rssList.feeds.append(RssFeed("Applause Ready Test Go", "https://fast.wistia.com/channels/1b8462lt0q/rss"))
+    rssList.feeds.append(RssFeed("Quality Remarks","https://www.spreaker.com/show/2507151/episodes/feed"))
+    # AI
+    rssList.feeds.append(RssFeed("MLOps.community","https://anchor.fm/s/174cb1b8/podcast/rss"))
+
 
 # Scan for new episodes and add to download queue
 download_queue = DownloadQueue(download_csv_cache, downloaded_csv_cache)
@@ -115,6 +127,9 @@ transcriber = Transcriber()
 while next_download != None:
     #print(yaml.dump(download_queue, indent=2))
 
+    # TODO: if there is an error downloading then add to an error queue
+    print("Processing: ", next_download.podcast_name, " - ", next_download.episode_title)
+
     inputAudioFile = download_if_not_exists(next_download.url, downloadPath)
 
     transcriptionFileName = filenameify(next_download.episode_title)
@@ -122,6 +137,8 @@ while next_download != None:
     transcriptionOutputFolder = os.path.join(outputPath, transcriptionOutputFolderName)
     if not os.path.exists(transcriptionOutputFolder):
         os.makedirs(transcriptionOutputFolder)
+
+    # TODO: if there is an error here add it to an error queue
     transcriber.transcribe(inputAudioFile, transcriptionOutputFolder, transcriptionFileName)
 
     download_queue.mark_as_downloaded(next_download)

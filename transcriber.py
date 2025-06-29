@@ -1,7 +1,7 @@
 import whisper
 import os
 import time
-from textoutput import output_raw_text_to_file, output_formatted_text_with_line_gaps
+from textoutput import output_raw_text_to_file, output_formatted_text_with_line_gaps, output_error_as_transcription
 from srtoutput import output_srt_file
 
 # official whisper output utils
@@ -13,6 +13,7 @@ class Transcriber():
         self.initialized_model_name = ""
         self.initialized_model = None
 
+    # TODO: if there is an error then the job should go in an error queue to allow recovery or retry
     def transcribe(self, inputAudioFile, outputFolder, outputFileName, whisper_model="base"):
 
         # loading the model takes time so only do this once, and only do when transcribing
@@ -74,24 +75,30 @@ class Transcriber():
         '''
         print("Transcribing File " + inputAudioFile)
         transcribeStartTime  = time.time()
-        result = self.initialized_model.transcribe(inputAudioFile)
-        transcribeEndTime  = time.time()
-        print('TIME: to transcribe - ', transcribeEndTime - transcribeStartTime, 'seconds')
+
+        try:
+            result = self.initialized_model.transcribe(inputAudioFile)
+            transcribeEndTime  = time.time()
+            print('TIME: to transcribe - ', transcribeEndTime - transcribeStartTime, 'seconds')
 
 
-        print("Writing transcript " + outputFileName)
-        print("To... " + outputFilePath)
-        outputStartTime  = time.time()
-        output_raw_text_to_file(outputFilePath + "-" + whisper_model, result["text"])
-        output_formatted_text_with_line_gaps(outputFilePath + "-" + whisper_model, result["segments"])
-        output_srt_file(outputFilePath + "-" + whisper_model, result["segments"])
+            print("Writing transcript " + outputFileName)
+            print("To... " + outputFilePath)
+            outputStartTime  = time.time()
+            output_raw_text_to_file(outputFilePath + "-" + whisper_model, result["text"])
+            output_formatted_text_with_line_gaps(outputFilePath + "-" + whisper_model, result["segments"])
+            output_srt_file(outputFilePath + "-" + whisper_model, result["segments"])
 
-        # try the official outputs instead of our hacks
-        writer = get_writer("all", str(outputFileFolder))
-        writer(result, outputFileName + "out")
+            # try the official outputs instead of our hacks
+            writer = get_writer("all", str(outputFileFolder))
+            writer(result, outputFileName + "out")
+            outputEndTime  = time.time()
+            print('TIME: to output - ', outputEndTime - outputStartTime, 'seconds')
+        except Exception as e:
+            output_error_as_transcription(outputFilePath + "-" + whisper_model, "ERROR TRANSCRIBING " + repr(e))
+            outputEndTime  = time.time()
+            print('TIME: to fail - ', outputEndTime - transcribeStartTime, 'seconds')
 
-        outputEndTime  = time.time()
-        print('TIME: to output - ', outputEndTime - outputStartTime, 'seconds')
 
         
 

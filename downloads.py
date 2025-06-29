@@ -2,10 +2,11 @@ import csv
 import requests
 import os
 from urllib.parse import urlparse
+from unicodedata import normalize
 import re
 
 def filenameify(aString):
-    return re.sub('[^A-Za-z0-9_-]',"-",aString.lower())
+    return re.sub('[^A-Za-z0-9_-]',"-", normalize('NFD', aString.lower()).encode('ascii','ignore').decode('utf-8'))
 
 def download_if_not_exists(downloadUrl, downloadPath):
 
@@ -33,7 +34,7 @@ def download_if_not_exists(downloadUrl, downloadPath):
 class DownloadFile:
     def __init__(self, podcast_name, episode_title, download_folder, url_to_download):
         self.podcast_name = podcast_name
-        self.episode_title = episode_title
+        self.episode_title = normalize('NFD', episode_title).encode('ascii','ignore').decode('utf-8')
         self.download_folder = download_folder
         self.url = url_to_download
 

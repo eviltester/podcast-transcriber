@@ -28,3 +28,8 @@ def output_formatted_text_with_line_gaps(fullOutputFilePath, segments, outputFil
                     para = para + " " + line
         if(len(para)>0):
             f.write(para + "\n")
+
+# output the exception as the main report
+def output_error_as_transcription(fullOutputFilePath, text, outputFileExtension = ".para.md"):
+    with open(fullOutputFilePath + outputFileExtension, mode="wt", encoding='utf-8') as f:
+        f.write(text)
