@@ -4,6 +4,7 @@ import os
 from downloads import DownloadFile, DownloadQueue, download_if_not_exists, filenameify
 from rss import RssFeed, RssListReader
 from transcriber import Transcriber
+from summarization import SummarizeQueue, SummarizeFile, summarize
 
 #
 # Main App code
@@ -56,6 +57,8 @@ whisperModel = "base"
 csvCaches = outputPath
 download_csv_cache = os.path.join(csvCaches, "download_queue.csv")
 downloaded_csv_cache = os.path.join(csvCaches, "downloaded_items.csv")
+summarize_queue_csv_cache = os.path.join(csvCaches, "summarize_queue.csv")
+summarized_csv_cache = os.path.join(csvCaches, "summarized_items.csv")
 
 print("----")
 print("CONFIG:")
@@ -102,6 +105,41 @@ else:
 # Scan for new episodes and add to download queue
 download_queue = DownloadQueue(download_csv_cache, downloaded_csv_cache)
 
+
+summarize_queue = SummarizeQueue(summarize_queue_csv_cache, summarized_csv_cache)
+
+# def fixFileNameScrewup(filename):
+#     lastFileNameLen = -1
+#     fileNameToUse = filename
+#     while lastFileNameLen != len(fileNameToUse):
+#         lastFileNameLen = len(fileNameToUse)
+#         #fileNameToUse = fileNameToUse.replace("b-","")
+#         #fileNameToUse = fileNameToUse.replace("--","")
+#     return fileNameToUse
+
+# hack to fill the caches with currently downloaded items
+# for downloadedItem in download_queue.downloaded:
+#     print(downloadedItem.podcast_name)
+#     filename = filenameify(downloadedItem.episode_title)
+#     fixedfoldername = fixFileNameScrewup(filename)
+#     # calculate the filename here
+#     outputFilePath = os.path.join(outputPath, filenameify(downloadedItem.podcast_name),fixedfoldername, fixedfoldername + "-base.para.md" )
+#     # check if file exists
+#     if not os.path.exists(outputFilePath):
+#         print("Transcript not exist: " + outputFilePath)
+#         # try the other path
+#         outputFilePath = os.path.join(outputPath, filenameify(downloadedItem.podcast_name),fixedfoldername, fixedfoldername + "-base.para.txt.md" )
+#         if os.path.exists(outputFilePath):
+#             summarize_queue.add(SummarizeFile(downloadedItem.podcast_name, fixedfoldername, outputFilePath))
+#             summarize_queue.save_caches()
+#         else:
+#             exit()
+#     else:
+#         print(outputFilePath)
+#         summarize_queue.add(SummarizeFile(downloadedItem.podcast_name, fixedfoldername, outputFilePath))
+#         summarize_queue.save_caches()
+
+
 for rss_feed in rssList.feeds:
     rss_feed.load()
 
@@ -113,7 +151,7 @@ for rss_feed in rssList.feeds:
         # add new items to download queue
         for item in rss_feed.new_items:
             download_queue.add(DownloadFile(item.feedname, item.title, downloadPath, item.download_url))
-            rss_feed.seen_items.append(item)
+            rss_feed.add_to_seen_cache(item)
 
         # write rss cache file
         download_queue.save_caches()
@@ -122,6 +160,18 @@ for rss_feed in rssList.feeds:
 next_download = download_queue.get_next()
 
 transcriber = Transcriber()
+
+
+# work through the summarization queue
+# summarization works but requires fine tuning
+# next_summary = summarize_queue.get_next()
+# while next_download != None:
+#     summarize(next_summary.file)
+#     summarize_queue.mark_as_dome(next_summary)
+#     summarize_queue.save_caches()
+#     next_summary = summarize_queue.get_next()
+
+
 
 # download and transcribe the next podcast
 while next_download != None:
@@ -139,11 +189,19 @@ while next_download != None:
         os.makedirs(transcriptionOutputFolder)
 
     # TODO: if there is an error here add it to an error queue
-    transcriber.transcribe(inputAudioFile, transcriptionOutputFolder, transcriptionFileName)
+    fileToSummarize = transcriber.transcribe(inputAudioFile, transcriptionOutputFolder, transcriptionFileName)
+
+    # now that it is transcribed, add it to the summary queue
+    if fileToSummarize != "":
+        summarize_queue.add(SummarizeFile(next_download.podcast_name, next_download.episode_title, fileToSummarize))
+        summarize_queue.save_caches()
 
     download_queue.mark_as_downloaded(next_download)
     download_queue.save_caches()
     next_download = download_queue.get_next()
+
+# summarize
+
 
 
 print("All Done")

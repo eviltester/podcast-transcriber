@@ -7,6 +7,11 @@ from srtoutput import output_srt_file
 # official whisper output utils
 from whisper.utils import get_writer
 
+# diarization notes for future speaker identification:
+# https://github.com/openai/whisper/discussions/264
+# https://community.openai.com/t/best-solution-for-whisper-diarization-speaker-labeling/505922/21
+# https://github.com/MahmoudAshraf97/whisper-diarization
+
 class Transcriber():
 
     def __init__(self):
@@ -86,7 +91,7 @@ class Transcriber():
             print("To... " + outputFilePath)
             outputStartTime  = time.time()
             output_raw_text_to_file(outputFilePath + "-" + whisper_model, result["text"])
-            output_formatted_text_with_line_gaps(outputFilePath + "-" + whisper_model, result["segments"])
+            fileToSummarize = output_formatted_text_with_line_gaps(outputFilePath + "-" + whisper_model, result["segments"])
             output_srt_file(outputFilePath + "-" + whisper_model, result["segments"])
 
             # try the official outputs instead of our hacks
@@ -94,10 +99,12 @@ class Transcriber():
             writer(result, outputFileName + "out")
             outputEndTime  = time.time()
             print('TIME: to output - ', outputEndTime - outputStartTime, 'seconds')
+            return fileToSummarize
         except Exception as e:
             output_error_as_transcription(outputFilePath + "-" + whisper_model, "ERROR TRANSCRIBING " + repr(e))
             outputEndTime  = time.time()
             print('TIME: to fail - ', outputEndTime - transcribeStartTime, 'seconds')
+            return ""
 
 
         

@@ -25,3 +25,11 @@ https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitat
 
 
 ---
+
+Other Similar Tools:
+
+- https://github.com/the-crypt-keeper/tldw
+- https://github.com/Zackriya-Solutions/meeting-minutes
+- https://github.com/martinopiaggi/summarize
+- https://github.com/marwashahid/Video-transcription-summary
+    - uses https://huggingface.co/Falconsai/text_summarization

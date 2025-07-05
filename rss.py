@@ -38,6 +38,14 @@ class RssFeed:
         self.seen_urls = set()
         self.new_urls = set()
 
+    def add_to_seen_cache(self, anItem):
+        if(anItem.download_url in self.seen_urls):
+            print("Removing duplicate from seen cache", anItem.download_url)
+        else:
+            self.seen_urls.add(anItem.download_url)
+            self.seen_items.append(anItem)
+
+
     def load(self):
         # https://pypi.org/project/feedparser/
         self.parsed_feed = feedparser.parse(self.feed_rss_url)

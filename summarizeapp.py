@@ -3,15 +3,13 @@ import sys
 import torch
 import os
 from transformers import pipeline
-from langchain.text_splitter import TokenTextSplitter
 
 model_creator = "facebook"
 model_name = "bart-large-cnn"
 
 if len(sys.argv) == 1:
     #use hardcoded path, because I'm testing
-    fileToRead = os.path.join("/Users/alanrichardson/Documents/docs-git/dev/python/podcast-transcriptions",
-                  "test-entities-cases-transcript.txt"
+    fileToRead = os.path.join("D:/git/dev/python/podcast-transcriptions/the-eviltester-show/how-to-get-a-job-in-software-testing/how-to-get-a-job-in-software-testing-base.para.txt.md"
                   )
 else:
     fileToRead = sys.argv[1]
@@ -30,7 +28,7 @@ else:
     summarizer = pipeline("summarization", model=f"{model_creator}/{model_name}")
 
 # we may need to split the text, set a limit here
-max_tokens_for_model = 700
+max_tokens_for_model = 1000
 
 print("Ready to Summarize")
 
@@ -46,7 +44,7 @@ print(f"Read File {fileToRead}")
 # splitting text information
 #  https://python.langchain.com/docs/modules/data_connection/document_transformers/text_splitters/split_by_token
 
-chunk_size = 250
+chunk_size = 300
 max_summary_size = chunk_size/2
 
 
@@ -138,8 +136,29 @@ print("\n\n---\n\n")
 
 outputSummary = ""
 
+outputSummary = "\n\n## Key Points\n\n"
+
 for summaryLine in summaryLines:
-    outputSummary = outputSummary + "\n\n" + summaryLine
+    # Try summarizing the summary
+    spacesInText = summaryLine.count(" ")
+    summarySize = int(spacesInText/2)
+    calculatedMax = 20
+    if summarySize<calculatedMax:
+        calculatedMax=summarySize-1
+
+    # Are there any transformers for making a truncated summary valid text?
+    # https://www.kdnuggets.com/how-to-summarize-texts-bart-model-hugging-face-transformers
+    # https://huggingface.co/transformers/v2.11.0/model_doc/bart.html
+    # https://stackoverflow.com/questions/66996270/limiting-bart-huggingface-model-to-complete-sentences-of-maximum-length
+    # titleSummary = summarizer(summaryLine, num_beams=10, max_length=calculatedMax, min_length=1, do_sample=False)
+    # titleSummaryLine = titleSummary.pop()['summary_text']
+    # Try summarizing it again with no limits to get valid sentence? No because then it hallucinates a long text
+    # titleSummary = summarizer(titleSummaryLine, do_sample=False)
+    # titleSummaryLine = titleSummary.pop()['summary_text']
+
+    # outputSummary = outputSummary + "\n**" + titleSummaryLine + "**\n\n"
+    # better to just embolden the first sentence if we do anything at all
+    outputSummary = outputSummary + "\n\n" + "* " + summaryLine + "\n\n"
 
 print(outputSummary)
 

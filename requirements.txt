@@ -6,3 +6,5 @@ transformers
 langchain
 tiktoken
 ffmpeg-python
+langchain-huggingface
+langchain-ollama
