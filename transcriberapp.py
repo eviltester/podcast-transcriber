@@ -23,9 +23,16 @@ TODO: allow start and stopping mid process
 TODO: Create a transcription queue and transcribed queue
 TODO: pick up queue items and start from queues
 - output the files to episode folders
-TODO: output more meta data from the RSS file into the episode folders e.g. episode number, length, etc.
+TODO: output all meta data from the RSS file into the episode folders e.g. episode number, length, etc.
+TODO: show the meta data in the summary output
+TODO: create a DB or CSV with all details rather than multiple csv
 - use the utils and the built in output to text, srt, vtt options
 TODO: investigate if passing in language as english is faster or if using base.en is faster
+TODO: ui
+- TODO: create a ui
+- TODO: allow repeat - download, transcripte, summarize
+- TODO: configure summarization with custom prompts and models
+- TODO: Rss config - download all or 'after date X' - to avoid getting old episodes when subscribe
 - Given a list of RSS feeds parse and process
 - Given an RSS feed parse and find new episodes, to add to download queue
    - download and parse rss feed
@@ -36,6 +43,7 @@ TODO: investigate if passing in language as english is faster or if using base.e
    - Create a basic queue list and process
    - Persists the queue to files to have history of downloads, this allows deleting mp3s after transcription
 - Given a url, download the mp3 and transcribe
+
 TODO: try https://github.com/huggingface/distil-whisper
 '''
 
@@ -164,12 +172,13 @@ transcriber = Transcriber()
 
 # work through the summarization queue
 # summarization works but requires fine tuning
-# next_summary = summarize_queue.get_next()
-# while next_download != None:
-#     summarize(next_summary.file)
-#     summarize_queue.mark_as_dome(next_summary)
-#     summarize_queue.save_caches()
-#     next_summary = summarize_queue.get_next()
+next_summary = summarize_queue.get_next()
+while next_summary != None:
+    # TODO: pass in the basic meta data - podcast title, name, links etc.
+    summarize(next_summary.file)
+    summarize_queue.mark_as_done(next_summary)
+    summarize_queue.save_caches()
+    next_summary = summarize_queue.get_next()
 
 
 

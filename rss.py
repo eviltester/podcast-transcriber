@@ -1,7 +1,8 @@
 import csv
 import feedparser
-from os import path
+from os import path, makedirs
 from unicodedata import normalize
+import json
 
 from downloads import filenameify
 
@@ -26,6 +27,18 @@ class RssListReader:
             for row in rss_list_reader:
                 self.feeds.append(RssFeed(feedname = row[0], feed_rss_url=row[1]))
 
+# this is a complete hack - we should have proper serialization at a minimum, but really a DB
+def store_the_episode_rss_meta_data(outputFolder, podcastname, item):
+    cachedData = RssCachedShow(podcastname, item.title, "", "")
+    # hack - create the podcast folder - normally done during transcription
+    outputFileFolder = path.join(outputFolder, filenameify(cachedData.feedname), filenameify(cachedData.title))
+    if not path.exists(outputFileFolder):
+        makedirs(outputFileFolder)
+    metaDataFile = path.join(outputFileFolder, "metadata.json")
+    if not path.exists(metaDataFile):
+        with open(metaDataFile, 'w') as f:
+            json.dump(item, f, sort_keys = True, indent=4)
+
 
 class RssFeed:
     def __init__(self, feedname, feed_rss_url):
@@ -37,6 +50,7 @@ class RssFeed:
         self.seen_items = []
         self.seen_urls = set()
         self.new_urls = set()
+        self.cache_path = ""
 
     def add_to_seen_cache(self, anItem):
         if(anItem.download_url in self.seen_urls):
@@ -57,6 +71,7 @@ class RssFeed:
     
     def load_seen_cache(self, cache_folder_path):        
 
+        self.cache_path = cache_folder_path
         filepath = path.join(cache_folder_path,self.__cached_file_name())
         if(not path.exists(filepath)):
             return
@@ -78,6 +93,9 @@ class RssFeed:
         # base newness on "have I seen this download url" before?
         for item in self.parsed_feed.entries:
             download_url=""
+
+            store_the_episode_rss_meta_data(self.cache_path, self.feedname, item)
+
             for aLink in item.links:
                 if(aLink.type=="audio/mpeg" or aLink.type=="audio/x-m4a" or aLink.type.startswith("audio/")):
                     download_url = aLink.href

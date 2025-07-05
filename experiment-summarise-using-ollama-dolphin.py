@@ -1,6 +1,6 @@
 import sys
 import os
-from summarise_using_ollama_dolphin import summarizeTranscriptFile
+from summarise_using_ollama import summarizeTranscriptFile
 
 if len(sys.argv) == 1:
     #use hardcoded path, because I'm testing

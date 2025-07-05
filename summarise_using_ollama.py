@@ -1,5 +1,4 @@
 from ollama import generate
-import sys
 import os
 from unicodedata import normalize
 
@@ -28,6 +27,7 @@ class Response:
 def generateFromModel(modelname, title, prompt):
     print(f"Executing prompt for {title} on {modelname}")
     text = generate(model=modelname, prompt=prompt)
+    # print(f"{title} - {text.response}")
     return Response(modelname, title, prompt, text.response)
 
 
@@ -48,18 +48,18 @@ def summarize(filecontents):
 
     # need to tweak this
     generalSummaryPrompt = "Summarize the main topics discussed in the following text. Use bullets and headings. Here is the text to summarize:\n\n"
-    generateFromPrompt(responses, filecontents, "Overview of Main Topics", generalSummaryPrompt, "mistral")
+    generateFromPrompt(responses, filecontents, "Main Topics", generalSummaryPrompt, "mistral")
 
     # https://veritysangan.com/chatgpt-podcast-show-notes-prompts/
 
     briefOverview = "Based on the transcript of this podcast episode, can you provide a brief introduction or overview that effectively captures the main theme or takeaway of the episode. The show notes should be around 200 words long and written in a persuasive way to engage the reader. Here is the transcript \n\n"
-    generateFromPrompt(responses, filecontents, "Brief Overview", briefOverview)
+    generateFromPrompt(responses, filecontents, "Overview", briefOverview)
 
     chattysummary = "Summarise the main topics discussed in the podcast episode, and provide a brief overview of how they were explored or analysed? I need approximately 300 words for podcast show notes and I need the show notes to be written in a formal and direct manner using the following transcription\n\n"
     generateFromPrompt(responses, filecontents, "Summary", chattysummary)
 
     keyinsightsprompt = "Use the following text and identify some of the key insights or takeaways presented in the text, and how might they be relevant or useful to readers. Here is the text "
-    generateFromPrompt(responses, filecontents, "Key Insights", keyinsightsprompt)
+    generateFromPrompt(responses, filecontents, "Key Insights", keyinsightsprompt, "llama3.1")
 
     actionprompt = "Create a list of action items that the reader can implement and take action on from the following text: \n\n"
     #generateFromPrompt(responses, filecontents, "Actionable Insights", actionprompt)

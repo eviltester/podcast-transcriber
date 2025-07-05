@@ -1,7 +1,7 @@
 import csv
 import os
 from unicodedata import normalize
-from summarise_using_ollama_dolphin import summarizeTranscriptFile
+from summarise_using_ollama import summarizeTranscriptFile
 
 def summarize(aFilePath):
     print("Handling summary for " + aFilePath)
@@ -71,6 +71,6 @@ class SummarizeQueue:
         else:
             return None
     
-    def mark_as_dome(self, anItem: SummarizeFile):
+    def mark_as_done(self, anItem: SummarizeFile):
         self.todo.remove(anItem)
         self.done.append(anItem)
