@@ -1,9 +1,10 @@
 # this would be easier with a db, but currently file based so scan meta data
-import json
 import os
 import yaml
 from dateutil.parser import parse
 from unicodedata import normalize
+
+from podcast_episode import load_the_podcast_episode_data, load_the_podcast_episode_data_from_file
 
 
 class PodcastInfo:
@@ -22,16 +23,14 @@ def getPodcastMetaData(rootdir):
             #print os.path.join(subdir, file)
             filepath = subdir + os.sep + file
 
-            if filepath.endswith("metadata.json"):
-                with open(filepath) as f:
-                    metaData = json.load(f)
-                    podcastName = metaData.get("podcastname","")
-                    episodename = metaData.get("title","")
-                    published = parse(metaData.get("published","2000-01-01 01:01:01 UTC"))
-                    podcastInfo = PodcastInfo(podcastName, episodename, published, os.path.dirname(filepath))
-                    print(".")
-                    #print(yaml.dump(podcastInfo, indent=2))
-                    podcasts.append(podcastInfo)
+            if filepath.endswith("episode.json"):
+                episode = load_the_podcast_episode_data_from_file(filepath)
+                podcastName = episode.podcastName
+                episodename = episode.title
+                published = episode.published
+                podcastInfo = PodcastInfo(podcastName, episodename, published, os.path.dirname(filepath))
+                print(".", end='')
+                podcasts.append(podcastInfo)
 
 podcastDataFolder = "d:/git/dev/python/podcast-transcriptions"
 getPodcastMetaData(podcastDataFolder)

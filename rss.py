@@ -1,26 +1,27 @@
 import csv
+
 import feedparser
-from os import path, makedirs
+from os import path
 from unicodedata import normalize
-import json
 from dateutil.parser import parse
 
 from downloads import filenameify
+from podcast_episode import PodcastEpisode
 
-class RssCachedShow:
-    def __init__(self, feedname, title, show_notes_url, download_url, published=None):
-        self.feedname =  normalize('NFD', feedname).encode('ascii','ignore').decode('utf-8')
-        self.title =  normalize('NFD', title).encode('ascii','ignore').decode('utf-8')
-        self.show_notes_url = show_notes_url
-        self.download_url = download_url
-        if published is None:
-            self.published = published
-        else:
-            if isinstance(published, str):
-                self.published = parse(published)
-            else:
-                self.published = published
+from html.parser import HTMLParser
 
+from podcast_episode import load_the_podcast_episode_data, store_the_podcast_episode_data
+
+class HtmlTagRemover(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.result = []
+
+    def handle_data(self, data):
+        self.result.append(data)
+
+    def get_data(self):
+        return ''.join(self.result)
 
 class RssListReader:
     # CSV file with
@@ -29,26 +30,12 @@ class RssListReader:
         self.filepath = filepath
         self.feeds = []
 
+    # todo: load and save needs to include all fields in the RssFeed
     def loadFeeds(self):
         with open(self.filepath, newline='') as csvfile:
             rss_list_reader = csv.reader(csvfile, delimiter=',', quotechar='"')
             for row in rss_list_reader:
                 self.feeds.append(RssFeed(feedname = row[0], feed_rss_url=row[1]))
-
-# this is a complete hack - we should have proper serialization at a minimum, but really a DB
-def store_the_episode_rss_meta_data(outputFolder, podcastname, item):
-    cachedData = RssCachedShow(podcastname, item.title, "", "")
-    # hack - create the podcast folder - normally done during transcription
-    outputFileFolder = path.join(outputFolder, filenameify(cachedData.feedname), filenameify(cachedData.title))
-    if not path.exists(outputFileFolder):
-        makedirs(outputFileFolder)
-    metaDataFile = path.join(outputFileFolder, "metadata.json")
-    if not path.exists(metaDataFile):
-        aDict = json.loads(json.dumps(item))
-        # now add other metadata
-        aDict["podcastname"] = podcastname
-        with open(metaDataFile, 'w') as f:
-            json.dump(aDict, f, sort_keys = True, indent=4)
 
 
 class RssFeed:
@@ -68,8 +55,8 @@ class RssFeed:
         # earliest date that auto download should start from
         self.earliestAutoDownloadDate = earliestAutoDownloadDate
 
-        self.new_items = []
-        self.seen_items = []
+        self.new_podcast_episodes = []
+        self.seen_podcast_episodes = []
         self.seen_urls = set()
         self.new_urls = set()
         self.cache_path = ""
@@ -79,7 +66,7 @@ class RssFeed:
             print("Removing duplicate from seen cache", anItem.download_url)
         else:
             self.seen_urls.add(anItem.download_url)
-            self.seen_items.append(anItem)
+            self.seen_podcast_episodes.append(anItem)
 
 
     def load(self):
@@ -105,51 +92,103 @@ class RssFeed:
                     print("Removing duplicate from seen cache", row[1])
                 else:
                     self.seen_urls.add(row[3])
-                    self.seen_items.append(RssCachedShow(feedname = row[0], title=row[1], show_notes_url=row[2], download_url=row[3]))
+                    # feedname = row[0], title=row[1], show_notes_url=row[2], download_url=row[3])
+                    episode = load_the_podcast_episode_data(cache_folder_path, row[0], row[1])
+                    self.seen_podcast_episodes.append(episode)
 
     def find_new_rss_items(self):
+
+        print("scanning rss feed " + self.feedname)
 
         if(self.parsed_feed==None):
             print("feed not loaded")
 
         # base newness on "have I seen this download url" before?
         for item in self.parsed_feed.entries:
-            download_url=""
 
-            store_the_episode_rss_meta_data(self.cache_path, self.feedname, item)
+            possibleNewEpisode = self.rss_item_to_PodcastEpisode(self.feedname,item)
 
-            for aLink in item.links:
-                if(aLink.type=="audio/mpeg" or aLink.type=="audio/x-m4a" or aLink.type.startswith("audio/")):
-                    download_url = aLink.href
+            seen_before = False
+            for seen in self.seen_podcast_episodes:
+                if(seen.download_url == possibleNewEpisode.download_url):
+                    print(".", end='')
+                    #print("seen episode before " + item.title)
+                    seen_before = True
+                    break
+
+            if(not seen_before):
+                if(possibleNewEpisode.download_url in self.new_urls):
+                    print("not adding duplicate new item ", item.title)
+                else:
+                    self.new_urls.add(possibleNewEpisode.download_url)
+                    self.new_podcast_episodes.append(possibleNewEpisode)
+                    store_the_podcast_episode_data(self.cache_path,possibleNewEpisode)
+
+    def rss_item_to_PodcastEpisode(self, podcastName, rssItem):
+
+        download_url = ""
+        for aLink in rssItem.links:
+            if(aLink.type=="audio/mpeg" or aLink.type=="audio/x-m4a" or aLink.type.startswith("audio/")):
+                download_url = aLink.href
             if(download_url==""):
-                print("error parsing rss feed cannot find download url for item " + item.title + " - " + item.link)
+                #print("error parsing rss feed cannot find download url for item " + rssItem.title + " - " + rssItem.link)
                 # try to find in enclosure
-                for anEnclosure in item.enclosures:
+                for anEnclosure in rssItem.enclosures:
                     if(anEnclosure.type=="audio/mpeg" or anEnclosure.type=="audio/x-m4a" or anEnclosure.type.startswith("audio/")):
                         if(hasattr(anEnclosure, "href")):
                             download_url = anEnclosure.href
                         if(download_url=="" and hasattr(anEnclosure, "url")):
                             download_url = anEnclosure.url
-            
-            seen_before = False
-            for seen in self.seen_items:
-                if(seen.download_url == download_url):
-                    print("seen episode before " + item.title)
-                    seen_before = True
-                    break
 
-            show_notes_link = ""
-            if(hasattr(item, "link")):
-                show_notes_link = item.link
+        show_notes_link = ""
+        if(hasattr(rssItem, "link")):
+            show_notes_link = rssItem.link
 
-            publishedDate = parse(item.get("published",None))
+        publishedDate = parse(rssItem.get("published",None))
 
-            if(not seen_before):
-                if(download_url in self.new_urls):
-                    print("not adding duplicate new item ", item.title)
+        duration = rssItem.get("itunes_duration", "00:00:00")
+
+        episode_title = rssItem.get("itunes_title", rssItem.get("title", None))
+        if episode_title == None:
+            if hasattr(rssItem,"title_detail"):
+                episode_title = rssItem["title_detail"].get("value","Unknown")
+
+        author = rssItem.get("author", None)
+        if author == None:
+            if hasattr(rssItem,"author_detail"):
+                author = rssItem["author_detail"].get("name",None)
+            if author == None:
+                if hasattr(rssItem,"authors"):
+                    author = ""
+                    authors = rssItem["authors"]
+                    postfix = ""
+                    for anAuthor in authors:
+                        author = author + postfix + anAuthor
+                        postfix = ", "
                 else:
-                    self.new_urls.add(download_url)
-                    self.new_items.append(RssCachedShow(self.feedname, item.title, show_notes_link, download_url, publishedDate))
+                    author = "Unknown"
+
+        summary = rssItem.get("summary", None)
+        if summary == None:
+            if hasattr(rssItem, "summary_detail"):
+                summary = rssItem["summary_detail"].get("value","")
+
+        # todo might also be in content[0].value, might also be in subtitle or subtitle_detail
+        htmlTagRemover = HtmlTagRemover()
+        htmlTagRemover.feed(summary)
+        summary = htmlTagRemover.get_data()
+
+        additionalLinks = {}
+        if hasattr(rssItem,"links"):
+            for additionalLink in rssItem.links:
+                additionalLinks.update({additionalLink.get("rel","a_") + "_" + additionalLink.get("type", "_x"): additionalLink.get("href","")})
+
+        imageUrl = ""
+        if hasattr(rssItem,"image"):
+            imageUrl = rssItem["image"].get("href","")
+
+        podcastEpisode = PodcastEpisode(podcastName, episode_title, show_notes_link, download_url, publishedDate, duration, author, summary, additionalLinks, imageUrl)
+        return podcastEpisode
     
     def write_seen_cache(self, cache_folder_path):
         if(self.parsed_feed==None):
@@ -159,7 +198,7 @@ class RssFeed:
         filepath = path.join(cache_folder_path,cache_file_name)
 
         with open(filepath, 'w', newline='') as csvfile:
-            print("Writing seen cache for ", cache_file_name)
+            print("\nWriting seen cache for ", cache_file_name)
             rss_list_writer = csv.writer(csvfile, delimiter=',', quotechar='"')
-            for item in self.seen_items:
-                rss_list_writer.writerow([item.feedname, item.title, item.show_notes_url, item.download_url])
+            for item in self.seen_podcast_episodes:
+                rss_list_writer.writerow([item.podcastName, item.title, item.show_notes_url, item.download_url])

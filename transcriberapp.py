@@ -1,12 +1,14 @@
 # pyyaml just for printing for debugging convenience
 import yaml
 import os
+
+from download_transcribe_processor import DownloadAndTranscribeProcessor
 from downloads import DownloadFile, DownloadQueue, download_if_not_exists, filenameify
 from markdownReporter import generateMarkdownSummaryReport
 from rss import RssFeed, RssListReader
-from transcriber import Transcriber
+from rss_feed_scanner import RssFeedScanner
 from summarization import SummarizeQueue, SummarizeFile, summarize
-from dateutil.parser import parse
+from summarize_queue_processor import SummarizeQueueProcessor
 
 #
 # Main App code
@@ -102,7 +104,7 @@ else:
     # Testing podcasts
     rssList.feeds.append(RssFeed("The EvilTester Show", "https://feed.pod.co/the-evil-tester-show", ["testing"], "https://eviltester.com/show", ["https://eviltester.com"]))
     rssList.feeds.append(RssFeed("The Testing Peers", "https://feeds.buzzsprout.com/1078751.rss", ["testing"], "https://testingpeers.com/", []))
-    rssList.feeds.append(RssFeed("AB Testing", "https://anchor.fm/s/45580f58/podcast/rss", ["testing"], "https://www.moderntesting.org/", []))
+    rssList.feeds.append(RssFeed("AB Testing", "https://anchor.fm/s/45580f58/podcast/rss", ["testing"], "https://www.moderntesting.org/", [], "2025 04 01 00:00:01 UTC"))
     rssList.feeds.append(RssFeed("Test Guild", "https://testtalks.libsyn.com/rss", ["testing"], "https://testguild.com/", ["https://testguild.com/podcasts/automation/", "https://www.youtube.com/playlist?list=PL9AgRtJkydU1jqvx46esyr56BXtm1QEds", "https://www.youtube.com/@JoeColantonio"]))
     rssList.feeds.append(RssFeed("The Vernon Richard Show", "https://feeds.transistor.fm/the-vernon-richard-show", ["testing"], "https://thevernonrichardshow.com/", ["https://www.youtube.com/@TheVernonRichardShow"]))
     rssList.feeds.append(RssFeed("The Testing Show", "https://thetestingshow.libsyn.com/rss", ["testing"], "https://www.qualitestgroup.com/insights/podcasts/", []))
@@ -115,122 +117,28 @@ else:
 # AI
     rssList.feeds.append(RssFeed("MLOps.community","https://anchor.fm/s/174cb1b8/podcast/rss",["ai"], "https://mlops.community/", ["https://www.youtube.com/@MLOps"]))
 
+print("\n")
 
-# Scan for new episodes and add to download queue
-download_queue = DownloadQueue(download_csv_cache, downloaded_csv_cache)
+x = input('Enter to start batch queue process:')
 
+if x == "":
+    # Scan for new episodes and add to download queue
+    download_queue = DownloadQueue(download_csv_cache, downloaded_csv_cache)
 
-summarize_queue = SummarizeQueue(summarize_queue_csv_cache, summarized_csv_cache)
+    # get the summarize queue
+    summarize_queue = SummarizeQueue(summarize_queue_csv_cache, summarized_csv_cache)
 
-# def fixFileNameScrewup(filename):
-#     lastFileNameLen = -1
-#     fileNameToUse = filename
-#     while lastFileNameLen != len(fileNameToUse):
-#         lastFileNameLen = len(fileNameToUse)
-#         #fileNameToUse = fileNameToUse.replace("b-","")
-#         #fileNameToUse = fileNameToUse.replace("--","")
-#     return fileNameToUse
+    feed_scanner = RssFeedScanner(outputPath, download_queue, rssList, downloadPath)
+    feed_scanner.scan_for_new_podcasts()
 
-# hack to fill the caches with currently downloaded items
-# for downloadedItem in download_queue.downloaded:
-#     print(downloadedItem.podcast_name)
-#     filename = filenameify(downloadedItem.episode_title)
-#     fixedfoldername = fixFileNameScrewup(filename)
-#     # calculate the filename here
-#     outputFilePath = os.path.join(outputPath, filenameify(downloadedItem.podcast_name),fixedfoldername, fixedfoldername + "-base.para.md" )
-#     # check if file exists
-#     if not os.path.exists(outputFilePath):
-#         print("Transcript not exist: " + outputFilePath)
-#         # try the other path
-#         outputFilePath = os.path.join(outputPath, filenameify(downloadedItem.podcast_name),fixedfoldername, fixedfoldername + "-base.para.txt.md" )
-#         if os.path.exists(outputFilePath):
-#             summarize_queue.add(SummarizeFile(downloadedItem.podcast_name, fixedfoldername, outputFilePath))
-#             summarize_queue.save_caches()
-#         else:
-#             exit()
-#     else:
-#         print(outputFilePath)
-#         summarize_queue.add(SummarizeFile(downloadedItem.podcast_name, fixedfoldername, outputFilePath))
-#         summarize_queue.save_caches()
+    download_queue_processor = DownloadAndTranscribeProcessor(download_queue, summarize_queue, downloadPath, outputPath)
+    download_queue_processor.download_transcribe_and_queue_for_summarization()
+
+    summarize_processor = SummarizeQueueProcessor(summarize_queue, outputPath)
+    summarize_processor.summarize_all()
 
 
-for rss_feed in rssList.feeds:
-    rss_feed.load()
-
-    rss_feed.load_seen_cache(outputPath)
-    rss_feed.find_new_rss_items()
-    for item in rss_feed.new_items:
-        print (item.title + " - " + item.download_url)
-
-        # add new items to download queue
-        # TODO: there should be a centralised PodcastRssItem class
-        # by default download everything
-        shouldDownload = True
-        if rss_feed.earliestAutoDownloadDate != None:
-            earliestdownload = parse(rss_feed.earliestAutoDownloadDate)
-            itempublished = None
-            if not item.published is None:
-                itempublished  = item.published
-            if not itempublished is None and itempublished < earliestdownload:
-                shouldDownload = False
-
-        if shouldDownload:
-            download_queue.add(DownloadFile(item.feedname, item.title, downloadPath, item.download_url))
-        rss_feed.add_to_seen_cache(item)
-
-    # write rss cache file
-    download_queue.save_caches()
-    rss_feed.write_seen_cache(outputPath)
-
-next_download = download_queue.get_next()
-
-transcriber = Transcriber()
-
-# download and transcribe the next podcast
-while next_download != None:
-    #print(yaml.dump(download_queue, indent=2))
-
-    # TODO: if there is an error downloading then add to an error queue
-    print("Processing: ", next_download.podcast_name, " - ", next_download.episode_title)
-
-    inputAudioFile = download_if_not_exists(next_download.url, downloadPath)
-
-    transcriptionFileName = filenameify(next_download.episode_title)
-    transcriptionOutputFolderName = filenameify(next_download.podcast_name)
-    transcriptionOutputFolder = os.path.join(outputPath, transcriptionOutputFolderName)
-    if not os.path.exists(transcriptionOutputFolder):
-        os.makedirs(transcriptionOutputFolder)
-
-    # TODO: if there is an error here add it to an error queue
-    fileToSummarize = transcriber.transcribe(inputAudioFile, transcriptionOutputFolder, transcriptionFileName)
-
-    if fileToSummarize == "ERROR":
-        # add to error queue
-        print("ERROR")
-
-    # now that it is transcribed, add it to the summary queue
-    if fileToSummarize != "ERROR":
-        summarize_queue.add(SummarizeFile(next_download.podcast_name, next_download.episode_title, fileToSummarize))
-        summarize_queue.save_caches()
-
-    download_queue.mark_as_downloaded(next_download)
-    download_queue.save_caches()
-    next_download = download_queue.get_next()
-
-# summarize
-
-# work through the summarization queue
-summarize_queue.refresh_cache()
-
-# summarization works but requires fine tuning
-next_summary = summarize_queue.get_next()
-while next_summary != None:
-    # TODO: pass in the basic meta data - podcast title, name, links etc.
-    summarize(next_summary.file)
-    generateMarkdownSummaryReport(next_summary.file)
-    summarize_queue.mark_as_done(next_summary)
-    summarize_queue.save_caches()
-    next_summary = summarize_queue.get_next()
+    print("All Done")
 
 
-print("All Done")
+# else show a UI

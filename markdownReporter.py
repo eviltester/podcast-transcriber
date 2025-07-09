@@ -1,69 +1,50 @@
-import json
 import os.path
 
 from downloads import filenameify
-
+from podcast_episode import load_the_podcast_episode_data
 
 # for a given file
 # extract the folder
 
-def generateMarkdownSummaryReport(aTranscriptFile):
-    outputPath = os.path.dirname(aTranscriptFile)
-    metadataFilePath = os.path.join(outputPath, "metadata.json")
-    if not os.path.exists(metadataFilePath):
-        print(f"cannot generate report as metadata.json does not exist for {outputPath}")
-        exit()
-    summaryFilePath = os.path.join(outputPath, "summary.md")
-    if not os.path.exists(metadataFilePath):
+def generateMarkdownSummaryReport(outputPath, podcastName, episodeTitle):
+
+    # title = metaData.get("title","")
+    podcastNameAsFile = filenameify(podcastName)
+    titleAsFile = filenameify(episodeTitle)
+
+    summaryFilePath = os.path.join(outputPath, podcastNameAsFile, titleAsFile, "summary.md")
+    if not os.path.exists(summaryFilePath):
         # TODO: for backwards compatibility could look for aTranscriptFile.notes.md and copy to summary.md in folder then continue
         print(f"cannot generate report as summary.md does not exist for {outputPath}")
         exit()
 
-    with open(metadataFilePath) as f:
-        metaData = json.load(f)
+    summaryReportFileName = os.path.join(outputPath,podcastNameAsFile, titleAsFile,f"summary-{titleAsFile}.md")
 
-
-    title = metaData.get("title","")
-    titleAsFile = filenameify(title)
-    summaryReportFileName = os.path.join(outputPath,f"summary-{titleAsFile}.md")
-
-
-    author = metaData.get("author","")
-
-    showNotes = metaData.get("link","")
-    links = metaData.get("links",[])
-    podcastName = metaData.get("podcastname","")
-    published = metaData.get("published","")
-    duration = metaData.get("itunes_duration","")
-    episodeLink = ""
-    if metaData.get("title_detail", "") != "":
-        if metaData["title_detail"].get("base","") != "":
-            episodeLink = metaData["title_detail"]["base"]
+    episode = load_the_podcast_episode_data(outputPath, podcastName, episodeTitle)
 
     summary = ""
     with open(summaryFilePath,"r") as file:
         summary = file.read()
 
     with open(summaryReportFileName, 'w') as f:
-        f.write(f"# {podcastName} - Episode Summary - {title}\n\n")
+        f.write(f"# {episode.podcastName} - Episode Summary - {episode.title}\n\n")
         f.write(f"\n**Episode Details**\n\n")
-        if podcastName != "":
-            f.write(f"- {podcastName}\n")
-        if title != "":
-            f.write(f"- {title}\n")
-        if duration != "":
-            f.write(f"- {duration}\n")
-        if published != "":
-            f.write(f"- {published}\n")
-        if author != "":
-            f.write(f"- {author}\n")
-        if showNotes != "":
-            f.write(f"- [Show Notes]({showNotes})\n")
-        for link in links:
-            rel = link.get("rel","")
-            type = link.get("type","")
-            href = link.get("href","")
-            f.write(f"- [{rel} - {type}]({href})\n")
-        if episodeLink != "":
-            f.write(f"- [Episode Link]({episodeLink})")
+        if episode.podcastName != "":
+            f.write(f"- Podcast: {episode.podcastName}\n")
+        if episode.title != "":
+            f.write(f"- Title: {episode.title}\n")
+        if episode.duration != "":
+            f.write(f"- Duration: {episode.duration}\n")
+        if episode.published != "":
+            f.write(f"- Published: {episode.published}\n")
+        if episode.author != "":
+            f.write(f"- Author: {episode.author}\n")
+        if episode.show_notes_url != "":
+            f.write(f"- [Show Notes]({episode.show_notes_url})\n")
+        if episode.download_url != "":
+            f.write(f"- [Download]({episode.download_url})\n")
+        for link in episode.links:
+            f.write(f"- [{link}]({episode.links[link]})\n")
+        if episode.summary != "":
+            f.write(f"\n\n> {episode.summary}\n\n\n")
         f.write(f"\n\n{summary}\n\n")
