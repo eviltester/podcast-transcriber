@@ -101,10 +101,10 @@ class Transcriber():
             print('TIME: to output - ', outputEndTime - outputStartTime, 'seconds')
             return fileToSummarize
         except Exception as e:
-            output_error_as_transcription(outputFilePath + "-" + whisper_model, "ERROR TRANSCRIBING " + repr(e))
+            output_error_as_transcription(outputFilePath + "-" + whisper_model + "-ERROR", "ERROR TRANSCRIBING " + repr(e))
             outputEndTime  = time.time()
             print('TIME: to fail - ', outputEndTime - transcribeStartTime, 'seconds')
-            return ""
+            return "ERROR"
 
 
         

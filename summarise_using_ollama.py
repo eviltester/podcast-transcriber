@@ -11,7 +11,7 @@ def readFileContents(fileToRead):
         exit()
 
     print("Reading File:" + fileToRead)
-    with open(fileToRead,"r") as file:
+    with open(fileToRead,"r", errors="ignore") as file:
         filecontents = file.read()
     return filecontents
 
@@ -78,7 +78,7 @@ def printResponses(responses):
 def outputResponsesToFile(responses, fileToOutput):
     print("Writing Markdown Notes:" + fileToOutput)
     with open(fileToOutput,"w") as file:
-        file.write(f"\n\n# Podcast Notes")
+        # file.write(f"\n\n# Podcast Notes")
         # TODO: output the public meta data here as markdown
         for response in responses:
             file.write(f"\n\n## {response.title}")
@@ -90,5 +90,7 @@ def summarizeTranscriptFile(fileNameToRead):
     filecontents = readFileContents(fileNameToRead)
     responses = summarize(filecontents)
     #printResponses(responses)
+    outputPath = os.path.dirname(fileNameToRead)
     fileToOutput = fileNameToRead + ".notes.md"
     outputResponsesToFile(responses, fileToOutput)
+    outputResponsesToFile(responses, os.path.join(outputPath,"summary.md"))

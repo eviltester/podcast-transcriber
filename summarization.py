@@ -5,6 +5,7 @@ from summarise_using_ollama import summarizeTranscriptFile
 
 def summarize(aFilePath):
     print("Handling summary for " + aFilePath)
+    # TODO: generate summary as JSON - then extract from JSON into a report, this would allow generating unused summarise and customising at report time
     summarizeTranscriptFile(aFilePath)
 
 class SummarizeFile:
@@ -20,13 +21,15 @@ class SummarizeQueue:
         self.cached_queue_file = cached_queue_file
         self.cached_done_queue_file = cached_done_queue_file
 
-        if(cached_queue_file!=""):
-            # load the cached queue file
-            self.__load_csv_file_as_array_contents(cached_queue_file, self.todo)
-        
-        if(cached_done_queue_file!=""):
-            # load the cached queue file
-            self.__load_csv_file_as_array_contents(cached_done_queue_file, self.done)
+        self.refresh_cache()
+
+        # if(cached_queue_file!=""):
+        #     # load the cached queue file
+        #     self.__load_csv_file_as_array_contents(cached_queue_file, self.todo)
+        #
+        # if(cached_done_queue_file!=""):
+        #     # load the cached queue file
+        #     self.__load_csv_file_as_array_contents(cached_done_queue_file, self.done)
 
     def __load_csv_file_as_array_contents(self, filepath, an_array):
         if(not os.path.exists(filepath)):
@@ -42,6 +45,17 @@ class SummarizeQueue:
             for item in an_array:
                 download_file_list_writer.writerow([item.podcast_name, item.episode_title, item.file])
 
+    def refresh_cache(self):
+        self.todo = []
+        self.done = []
+
+        if(self.cached_queue_file!=""):
+            # load the cached queue file
+            self.__load_csv_file_as_array_contents(self.cached_queue_file, self.todo)
+
+        if(self.cached_done_queue_file!=""):
+            # load the cached queue file
+            self.__load_csv_file_as_array_contents(self.cached_done_queue_file, self.done)
 
     def save_caches(self):
         if(self.cached_queue_file!=""):

@@ -15,6 +15,11 @@ def download_if_not_exists(downloadUrl, downloadPath):
     parsed_url = urlparse(downloadUrl)
     path = parsed_url.path
     filename = filenameify(os.path.basename(path))
+    # todo: could just replace last - with .
+    if filename.endswith("-mp3"):
+        filename = filename + ".mp3"
+    if filename.endswith("-m4a"):
+        filename = filename + ".m4a"
 
     # exit if the filename exists in the download directory
     full_download_path = os.path.join(downloadPath, filename)
@@ -24,7 +29,19 @@ def download_if_not_exists(downloadUrl, downloadPath):
     
     print("Downloading " + downloadUrl)
     # download the file to the download direcotory
-    audiofile = requests.get(downloadUrl)
+    # added headers and redirects for buzzsprout downloads
+    # http_proxy  = "http://127.0.0.1:8080"
+    # https_proxy = "http://127.0.0.1:8080"
+    # ftp_proxy   = "http://127.0.0.1:8080"
+    #
+    # proxies = {
+    #     "http"  : http_proxy,
+    #     "https" : https_proxy,
+    #     "ftp"   : ftp_proxy
+    # }
+    browserUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)"
+    headers = headers={"User-Agent":browserUserAgent}
+    audiofile = requests.get(downloadUrl, allow_redirects=True, headers=headers) #,proxies=proxies, verify=False)
     with open(full_download_path, 'wb') as f:
         f.write(audiofile.content)
 

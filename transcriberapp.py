@@ -2,9 +2,11 @@
 import yaml
 import os
 from downloads import DownloadFile, DownloadQueue, download_if_not_exists, filenameify
+from markdownReporter import generateMarkdownSummaryReport
 from rss import RssFeed, RssListReader
 from transcriber import Transcriber
 from summarization import SummarizeQueue, SummarizeFile, summarize
+from dateutil.parser import parse
 
 #
 # Main App code
@@ -25,6 +27,7 @@ TODO: pick up queue items and start from queues
 - output the files to episode folders
 TODO: output all meta data from the RSS file into the episode folders e.g. episode number, length, etc.
 TODO: show the meta data in the summary output
+TODO: output summaries as JSON and convert to markdown at export report time
 TODO: create a DB or CSV with all details rather than multiple csv
 - use the utils and the built in output to text, srt, vtt options
 TODO: investigate if passing in language as english is faster or if using base.en is faster
@@ -95,19 +98,22 @@ else:
     print("e.g.")
     print("The EvilTester Show,https://feed.pod.co/the-evil-tester-show")
     print("The Testing Peers,https://feeds.buzzsprout.com/1078751.rss")
-    # TODO: add a category attribute
+
     # Testing podcasts
-    rssList.feeds.append(RssFeed("The EvilTester Show", "https://feed.pod.co/the-evil-tester-show"))
-    rssList.feeds.append(RssFeed("The Testing Peers", "https://feeds.buzzsprout.com/1078751.rss"))
-    rssList.feeds.append(RssFeed("AB Testing", "https://anchor.fm/s/45580f58/podcast/rss"))
-    rssList.feeds.append(RssFeed("Test Guild", "https://testtalks.libsyn.com/rss"))
-    rssList.feeds.append(RssFeed("The Vernon Richard Show", "https://feeds.transistor.fm/the-vernon-richard-show"))
-    rssList.feeds.append(RssFeed("The Testing Show", "https://thetestingshow.libsyn.com/rss"))
-    rssList.feeds.append(RssFeed("The Engineering Quality Podcast", "https://anchor.fm/s/f6a276e0/podcast/rss"))
-    rssList.feeds.append(RssFeed("Applause Ready Test Go", "https://fast.wistia.com/channels/1b8462lt0q/rss"))
-    rssList.feeds.append(RssFeed("Quality Remarks","https://www.spreaker.com/show/2507151/episodes/feed"))
-    # AI
-    rssList.feeds.append(RssFeed("MLOps.community","https://anchor.fm/s/174cb1b8/podcast/rss"))
+    rssList.feeds.append(RssFeed("The EvilTester Show", "https://feed.pod.co/the-evil-tester-show", ["testing"], "https://eviltester.com/show", ["https://eviltester.com"]))
+    rssList.feeds.append(RssFeed("The Testing Peers", "https://feeds.buzzsprout.com/1078751.rss", ["testing"], "https://testingpeers.com/", []))
+    rssList.feeds.append(RssFeed("AB Testing", "https://anchor.fm/s/45580f58/podcast/rss", ["testing"], "https://www.moderntesting.org/", []))
+    rssList.feeds.append(RssFeed("Test Guild", "https://testtalks.libsyn.com/rss", ["testing"], "https://testguild.com/", ["https://testguild.com/podcasts/automation/", "https://www.youtube.com/playlist?list=PL9AgRtJkydU1jqvx46esyr56BXtm1QEds", "https://www.youtube.com/@JoeColantonio"]))
+    rssList.feeds.append(RssFeed("The Vernon Richard Show", "https://feeds.transistor.fm/the-vernon-richard-show", ["testing"], "https://thevernonrichardshow.com/", ["https://www.youtube.com/@TheVernonRichardShow"]))
+    rssList.feeds.append(RssFeed("The Testing Show", "https://thetestingshow.libsyn.com/rss", ["testing"], "https://www.qualitestgroup.com/insights/podcasts/", []))
+    rssList.feeds.append(RssFeed("The Engineering Quality Podcast", "https://anchor.fm/s/f6a276e0/podcast/rss", ["testing"], "https://www.engineeringqualitypodcast.com/", []))
+    rssList.feeds.append(RssFeed("Applause Ready Test Go", "https://fast.wistia.com/channels/1b8462lt0q/rss", ["testing"], "https://www.applause.com/podcasts/", []))
+    rssList.feeds.append(RssFeed("Quality Remarks","https://www.spreaker.com/show/2507151/episodes/feed", ["testing"], "https://qualityremarks.com/", ["https://qualityremarks.com/qr-podcast/", "https://www.youtube.com/@KeithKlain"]))
+    rssList.feeds.append(RssFeed("Test and Code","https://feeds.transistor.fm/test-and-code", ["testing"], "https://testandcode.com/", ["https://testandcode.com/archive"], "2025 04 01 00:00:01 UTC"))
+    rssList.feeds.append(RssFeed("MOT This Week in Testing","https://fast.wistia.com/channels/czgwdadw2c/rss", ["testing"], "https://www.ministryoftesting.com/podcasts", ["https://www.ministryoftesting.com"], "2025 06 01 00:00:01 UTC"))
+
+# AI
+    rssList.feeds.append(RssFeed("MLOps.community","https://anchor.fm/s/174cb1b8/podcast/rss",["ai"], "https://mlops.community/", ["https://www.youtube.com/@MLOps"]))
 
 
 # Scan for new episodes and add to download queue
@@ -157,30 +163,28 @@ for rss_feed in rssList.feeds:
         print (item.title + " - " + item.download_url)
 
         # add new items to download queue
-        for item in rss_feed.new_items:
-            download_queue.add(DownloadFile(item.feedname, item.title, downloadPath, item.download_url))
-            rss_feed.add_to_seen_cache(item)
+        # TODO: there should be a centralised PodcastRssItem class
+        # by default download everything
+        shouldDownload = True
+        if rss_feed.earliestAutoDownloadDate != None:
+            earliestdownload = parse(rss_feed.earliestAutoDownloadDate)
+            itempublished = None
+            if not item.published is None:
+                itempublished  = item.published
+            if not itempublished is None and itempublished < earliestdownload:
+                shouldDownload = False
 
-        # write rss cache file
-        download_queue.save_caches()
-        rss_feed.write_seen_cache(outputPath)
+        if shouldDownload:
+            download_queue.add(DownloadFile(item.feedname, item.title, downloadPath, item.download_url))
+        rss_feed.add_to_seen_cache(item)
+
+    # write rss cache file
+    download_queue.save_caches()
+    rss_feed.write_seen_cache(outputPath)
 
 next_download = download_queue.get_next()
 
 transcriber = Transcriber()
-
-
-# work through the summarization queue
-# summarization works but requires fine tuning
-next_summary = summarize_queue.get_next()
-while next_summary != None:
-    # TODO: pass in the basic meta data - podcast title, name, links etc.
-    summarize(next_summary.file)
-    summarize_queue.mark_as_done(next_summary)
-    summarize_queue.save_caches()
-    next_summary = summarize_queue.get_next()
-
-
 
 # download and transcribe the next podcast
 while next_download != None:
@@ -200,8 +204,12 @@ while next_download != None:
     # TODO: if there is an error here add it to an error queue
     fileToSummarize = transcriber.transcribe(inputAudioFile, transcriptionOutputFolder, transcriptionFileName)
 
+    if fileToSummarize == "ERROR":
+        # add to error queue
+        print("ERROR")
+
     # now that it is transcribed, add it to the summary queue
-    if fileToSummarize != "":
+    if fileToSummarize != "ERROR":
         summarize_queue.add(SummarizeFile(next_download.podcast_name, next_download.episode_title, fileToSummarize))
         summarize_queue.save_caches()
 
@@ -211,6 +219,18 @@ while next_download != None:
 
 # summarize
 
+# work through the summarization queue
+summarize_queue.refresh_cache()
+
+# summarization works but requires fine tuning
+next_summary = summarize_queue.get_next()
+while next_summary != None:
+    # TODO: pass in the basic meta data - podcast title, name, links etc.
+    summarize(next_summary.file)
+    generateMarkdownSummaryReport(next_summary.file)
+    summarize_queue.mark_as_done(next_summary)
+    summarize_queue.save_caches()
+    next_summary = summarize_queue.get_next()
 
 
 print("All Done")

@@ -33,6 +33,9 @@ def output_formatted_text_with_line_gaps(fullOutputFilePath, segments, outputFil
 
 # output the exception as the main report
 def output_error_as_transcription(fullOutputFilePath, text, outputFileExtension = ".para.md"):
+    print("ERROR OUTPUTING TRANSCRIPTION")
+    print(fullOutputFilePath)
+    print(text)
     with open(fullOutputFilePath + outputFileExtension, mode="wt", encoding='utf-8') as f:
         f.write(text)
     return fullOutputFilePath + outputFileExtension

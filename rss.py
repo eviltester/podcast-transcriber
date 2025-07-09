@@ -3,15 +3,23 @@ import feedparser
 from os import path, makedirs
 from unicodedata import normalize
 import json
+from dateutil.parser import parse
 
 from downloads import filenameify
 
 class RssCachedShow:
-    def __init__(self, feedname, title, show_notes_url, download_url):
+    def __init__(self, feedname, title, show_notes_url, download_url, published=None):
         self.feedname =  normalize('NFD', feedname).encode('ascii','ignore').decode('utf-8')
         self.title =  normalize('NFD', title).encode('ascii','ignore').decode('utf-8')
         self.show_notes_url = show_notes_url
         self.download_url = download_url
+        if published is None:
+            self.published = published
+        else:
+            if isinstance(published, str):
+                self.published = parse(published)
+            else:
+                self.published = published
 
 
 class RssListReader:
@@ -36,15 +44,29 @@ def store_the_episode_rss_meta_data(outputFolder, podcastname, item):
         makedirs(outputFileFolder)
     metaDataFile = path.join(outputFileFolder, "metadata.json")
     if not path.exists(metaDataFile):
+        aDict = json.loads(json.dumps(item))
+        # now add other metadata
+        aDict["podcastname"] = podcastname
         with open(metaDataFile, 'w') as f:
-            json.dump(item, f, sort_keys = True, indent=4)
+            json.dump(aDict, f, sort_keys = True, indent=4)
 
 
 class RssFeed:
-    def __init__(self, feedname, feed_rss_url):
+    def __init__(self, feedname, feed_rss_url, categories=None, homeUrl="", hrefs=None, earliestAutoDownloadDate=None):
         self.feedname =  normalize('NFD', feedname).encode('ascii','ignore').decode('utf-8')
         self.feed_rss_url = feed_rss_url
         self.parsed_feed = None
+        if categories is None:
+            self.categories = []
+        else:
+            self.categories = categories
+        self.homeUrl = homeUrl
+        if hrefs is None:
+            hrefs = []
+        else:
+            self.hrefs = hrefs
+        # earliest date that auto download should start from
+        self.earliestAutoDownloadDate = earliestAutoDownloadDate
 
         self.new_items = []
         self.seen_items = []
@@ -120,12 +142,14 @@ class RssFeed:
             if(hasattr(item, "link")):
                 show_notes_link = item.link
 
+            publishedDate = parse(item.get("published",None))
+
             if(not seen_before):
                 if(download_url in self.new_urls):
                     print("not adding duplicate new item ", item.title)
                 else:
                     self.new_urls.add(download_url)
-                    self.new_items.append(RssCachedShow(self.feedname, item.title, show_notes_link, download_url))
+                    self.new_items.append(RssCachedShow(self.feedname, item.title, show_notes_link, download_url, publishedDate))
     
     def write_seen_cache(self, cache_folder_path):
         if(self.parsed_feed==None):
