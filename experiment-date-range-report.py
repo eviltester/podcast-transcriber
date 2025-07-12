@@ -3,6 +3,8 @@ import os
 import yaml
 from dateutil.parser import parse
 from unicodedata import normalize
+import subprocess
+import re
 
 from podcast_episode import load_the_podcast_episode_data, load_the_podcast_episode_data_from_file
 
@@ -35,9 +37,9 @@ def getPodcastMetaData(rootdir):
 podcastDataFolder = "d:/git/dev/python/podcast-transcriptions"
 getPodcastMetaData(podcastDataFolder)
 
-outputFolderName = "output-reports/2025-06-june"
-fromDate = parse("2025-06-01 00:00:01 UTC")
-toDate = parse("2025-06-30 23:59:59 UTC")
+outputFolderName = "output-reports/2025-07-july"
+fromDate = parse("2025-07-01 00:00:01 UTC")
+toDate = parse("2025-07-31 23:59:59 UTC")
 
 #dateRangedPodcasts = []
 
@@ -96,7 +98,13 @@ with open(os.path.join(outputPath,"summary-details.md"),"w") as f:
             with open(os.path.join(inputPath,f"summary-{nameAsDir}.md"),"r", errors="ignore") as summary:
                 summarymd = summary.read()
             summarymd = normalize('NFD', summarymd).encode('ascii','ignore').decode('utf-8')
+
+            # we had issues where AI generated summary might have "---" or "--- " without 2 newline break
+            # which caused pandoc to treat it as yaml markdown
+            summarymd = re.sub(r"^---[ ]*\n([^\n])",r"---\n\n\1", summarymd, flags=re.M)
+
             f.write(f"\n\n{summarymd}\n\n---\n\n")
 
 # todo: call pandocifier to generate pdf
 # pandoc summary-details.md -f markdown -s -o summary-report.pdf --toc --toc-depth=4
+subprocess.run(["pandoc",os.path.join(outputPath,"summary-details.md"), "-f","markdown", "-s", "-o", os.path.join(outputPath,"summary-report.pdf"),"--toc", "--toc-depth=4"])

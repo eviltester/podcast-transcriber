@@ -46,5 +46,5 @@ def generateMarkdownSummaryReport(outputPath, podcastName, episodeTitle):
         for link in episode.links:
             f.write(f"- [{link}]({episode.links[link]})\n")
         if episode.summary != "":
-            f.write(f"\n\n> {episode.summary}\n\n\n")
+            f.write(f"\n\n---\n\n{episode.summary}\n\n---\n\n")
         f.write(f"\n\n{summary}\n\n")

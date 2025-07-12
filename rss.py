@@ -9,6 +9,7 @@ from downloads import filenameify
 from podcast_episode import PodcastEpisode
 
 from html.parser import HTMLParser
+from markdownify import markdownify as md
 
 from podcast_episode import load_the_podcast_episode_data, store_the_podcast_episode_data
 
@@ -107,6 +108,7 @@ class RssFeed:
         for item in self.parsed_feed.entries:
 
             possibleNewEpisode = self.rss_item_to_PodcastEpisode(self.feedname,item)
+            #store_the_podcast_episode_data(self.cache_path,possibleNewEpisode)
 
             seen_before = False
             for seen in self.seen_podcast_episodes:
@@ -174,9 +176,11 @@ class RssFeed:
                 summary = rssItem["summary_detail"].get("value","")
 
         # todo might also be in content[0].value, might also be in subtitle or subtitle_detail
-        htmlTagRemover = HtmlTagRemover()
-        htmlTagRemover.feed(summary)
-        summary = htmlTagRemover.get_data()
+        # htmlTagRemover = HtmlTagRemover()
+        # htmlTagRemover.feed(summary)
+        # summary = htmlTagRemover.get_data()
+        # convert summary to markdown rather than stripping html tags
+        summary = md(summary)
 
         additionalLinks = {}
         if hasattr(rssItem,"links"):

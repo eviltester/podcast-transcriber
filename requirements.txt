@@ -9,3 +9,4 @@ ffmpeg-python
 langchain-huggingface
 langchain-ollama
 python-dateutil
+markdownify

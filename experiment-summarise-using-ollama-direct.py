@@ -1,6 +1,7 @@
 from ollama import generate
 import sys
 import os
+import time
 
 
 if len(sys.argv) == 1:
@@ -21,17 +22,20 @@ with open(fileToRead,"r") as file:
 
 
 class Response:
-    def __init__(self, modelname, title, prompt, response):
+    def __init__(self, modelname, title, prompt, response, seconds_to_generate):
         self.modelname = modelname
         self.prompt = prompt
         self.title = title
         self.response = response
+        self.seconds_to_generate = seconds_to_generate
 
 
 def generateFromModel(modelname, title, prompt):
     print(f"Executing prompt for {title} on {modelname}")
+    start_time = time.time()
     text = generate(model=modelname, prompt=prompt)
-    return Response(modelname, title, prompt, text.response)
+    end_time = time.time()
+    return Response(modelname, title, prompt, text.response, (end_time - start_time))
 
 
 print(f"Read File {fileToRead}")
@@ -48,49 +52,41 @@ responses = []
 
 print("Starting to Summarize")
 
-gemmaControlText = "\n\n Add --- before and after your response."
 
-def generateFromPrompt(responsesArray, filecontents, title, prompt):
-    gemmaControlText = "\n\n Add --- before and after your response."
-    # https://ollama.com/library/llama3.1
-    #responsesArray.append(generateFromModel("llama3.1", title + " LLAMA 3.1", f"{prompt} {filecontents}"))
-    # https://ollama.com/library/dolphin3
-    # creates bullets like mistral but doesn't hallucinate as much - might be best
-    responsesArray.append(generateFromModel("dolphin3", title + " DOLPHIN3", f"{prompt} {filecontents}"))
-    # https://ollama.com/library/magistral
-    # magistral is good but slow
-    # responsesArray.append(generateFromModel("magistral", title + " MAGISTRAL", f"{prompt} {filecontents}"))
-    # https://ollama.com/library/mistral
-    # Mistral likes to hallucinate names but creates bullet lists well
-    #responsesArray.append(generateFromModel("mistral", title + " MISTRAL", f"{prompt} {filecontents}"))
-    #https://ollama.com/library/gemma3
-    # gemma3 is too chatty and likes to critique rather than do what it is told
-    #responsesArray.append(generateFromModel("gemma3", title + " GEMMA3", f"{prompt} {filecontents} {gemmaControlText}"))
+#modelName = "magistral"
+#modelPrefix = ""
+#modelName = "gwen3:8b"
+modelName = "gwen3:14b"
+modelPrefix = "/no_think " # for gwen3 need to remove "<think>" and "</think>" from the output
+
+generalSummaryParaPrompt = "Summarize the main topics discussed in the following text as a short paragraph of writing:\n\n"
+responses.append(generateFromModel(modelName, "Main Summary", f"{modelPrefix} {generalSummaryParaPrompt} {filecontents}"))
 
 generalSummaryPrompt = "Summarize the main topics discussed in the following text. Use bullets and headings. Here is the text to summarize:\n\n"
-generateFromPrompt(responses, filecontents, "Main Topics", generalSummaryPrompt)
+responses.append(generateFromModel(modelName, "Main Topics", f"{modelPrefix} {generalSummaryPrompt} {filecontents}"))
 
+actionprompt = "Create a list of action items from the following text: \n\n"
+responses.append(generateFromModel(modelName, "Actionable items", f"{actionprompt} {filecontents}"))
 
 # https://veritysangan.com/chatgpt-podcast-show-notes-prompts/
 
-chattysummary = "Can you summarise the main topics discussed in the podcast episode, and provide a brief overview of how they were explored or analysed? I need approximately 300 words for podcast show notes and I need the show notes to be written in an informal and chatty manner using the following transcription\n\n"
-generateFromPrompt(responses, filecontents, "Chatty Summary", chattysummary)
+# chattysummary = "Can you summarise the main topics discussed in the podcast episode, and provide a brief overview of how they were explored or analysed? I need approximately 300 words for podcast show notes and I need the show notes to be written in an informal and chatty manner using the following transcription\n\n"
+# responses.append(generateFromModel(modelName, "Chatty Summary", f"{chattysummary} {filecontents}"))
+#
+# keyinsightsprompt = "Use the following podcast transcript and identify some of the key insights or takeaways presented in the podcast episode, and how might they be relevant or useful to listeners. I need you to use this information to create podcast show notes. Here is the transcript "
+# responses.append(generateFromModel(modelName, "Key Insights", f"{keyinsightsprompt} {filecontents}"))
+#
+# notablequotes = "Can you identify any notable quotes, anecdotes, or examples from the podcast episode that help illustrate the main points or themes discussed to create show notes for this podcast episodes. Use this transcript to write the show notes\n\n"
+# responses.append(generateFromModel(modelName, "Notable Quotes", f"{notablequotes} {filecontents}"))
+#
 
-keyinsightsprompt = "Use the following podcast transcript and identify some of the key insights or takeaways presented in the podcast episode, and how might they be relevant or useful to listeners. I need you to use this information to create podcast show notes. Here is the transcript "
-generateFromPrompt(responses, filecontents, "Key Insights", keyinsightsprompt)
-
-
-notablequotes = "Can you identify any notable quotes, anecdotes, or examples from the podcast episode that help illustrate the main points or themes discussed to create show notes for this podcast episodes. Use this transcript to write the show notes\n\n"
-generateFromPrompt(responses, filecontents, "Notable Quotes", notablequotes)
-
-actionprompt = "Create a list of action items from the following text: \n\n"
-generateFromPrompt(responses, filecontents, "Actionable items", actionprompt)
-
-briefOverview = "Based on the transcript of this podcast episode, can you provide a brief introduction or overview that effectively captures the main theme or takeaway of the episode. I need the show notes to be around 200 words long and written in a persuasive way to engage the reader. Here is the transcript \n\n"
-generateFromPrompt(responses, filecontents, "Breif Overview", briefOverview)
+#
+# briefOverview = "Based on the transcript of this podcast episode, can you provide a brief introduction or overview that effectively captures the main theme or takeaway of the episode. I need the show notes to be around 200 words long and written in a persuasive way to engage the reader. Here is the transcript \n\n"
+# responses.append(generateFromModel(modelName, "Brief Overview", f"{actionprompt} {filecontents}"))
 
 for response in responses:
-    print(f"\n\n# {response.title}")
+    print(f"# {modelName}")
+    print(f"\n\n# {response.title} - {response.seconds_to_generate}")
     print("\n\n" + response.response)
 
 
