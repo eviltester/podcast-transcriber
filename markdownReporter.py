@@ -40,11 +40,11 @@ def generateMarkdownSummaryReport(outputPath, podcastName, episodeTitle):
         if episode.author != "":
             f.write(f"- Author: {episode.author}\n")
         if episode.show_notes_url != "":
-            f.write(f"- [Show Notes]({episode.show_notes_url})\n")
+            f.write(f"- [Show Notes]({episode.show_notes_url}) [_[link]({episode.show_notes_url})_]\n")
         if episode.download_url != "":
-            f.write(f"- [Download]({episode.download_url})\n")
+            f.write(f"- [Download]({episode.download_url}) [_[link]({episode.download_url})_]\n")
         for link in episode.links:
-            f.write(f"- [{link}]({episode.links[link]})\n")
+            f.write(f"- [{link}]({episode.links[link]}) [_[link]({episode.links[link]})_]\n")
         if episode.summary != "":
             f.write(f"\n\n---\n\n{episode.summary}\n\n---\n\n")
         f.write(f"\n\n{summary}\n\n")
