@@ -6,7 +6,7 @@ from podcast_episode import load_the_podcast_episode_data
 # for a given file
 # extract the folder
 
-def generateMarkdownSummaryReport(outputPath, podcastName, episodeTitle):
+def generateMarkdownSummaryReport(outputPath, podcastName, episodeTitle, podcast_details):
 
     # title = metaData.get("title","")
     podcastNameAsFile = filenameify(podcastName)
@@ -28,7 +28,18 @@ def generateMarkdownSummaryReport(outputPath, podcastName, episodeTitle):
 
     with open(summaryReportFileName, 'w') as f:
         f.write(f"# {episode.podcastName} - Episode Summary - {episode.title}\n\n")
-        f.write(f"\n**Episode Details**\n\n")
+
+        if podcast_details is not None:
+            f.write(f"\n\n**Podcast Details: {podcast_details.feedname}**\n\n")
+            f.write(f"\n\n- URL: [_[{podcast_details.homeUrl}]({podcast_details.homeUrl})_]\n\n")
+
+            if len(podcast_details.hrefs) != 0:
+                f.write(f"\n\n- related urls:\n")
+                for an_href in podcast_details.hrefs:
+                    f.write(f"   - [_[{an_href}]({an_href})_]\n")
+
+        f.write(f"\n\n**Episode Details**\n\n")
+
         if episode.podcastName != "":
             f.write(f"- Podcast: {episode.podcastName}\n")
         if episode.title != "":

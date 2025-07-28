@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Podcast Transcriber</title>
+</head>
+<body>
+<button id="doAllTheWork">Process Everything</button>
+
+<script>
+    document.getElementById('doAllTheWork').addEventListener('click', function() {
+
+        var button = this;
+        button.disabled = true;
+
+        fetch('/api/processall', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: ""
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert('Success: ' + JSON.stringify(data));
+        })
+        .catch((error) => {
+            alert('Error: ' + error);
+        })
+        .finally(() => {
+            button.disabled = false;
+        });
+    });
+</script>
+</body>
+</html>

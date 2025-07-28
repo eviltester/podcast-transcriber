@@ -1,5 +1,5 @@
 from transcriber import Transcriber
-from downloads import download_if_not_exists, filenameify
+from downloads import download_if_not_exists, filenameify, delete_downloaded_file
 import os
 from summarization import SummarizeFile
 
@@ -44,4 +44,11 @@ class DownloadAndTranscribeProcessor:
 
             self.download_queue.mark_as_downloaded(next_download)
             self.download_queue.save_caches()
+
+            # TODO: acast calls all episodes media-mp3.mp3 so we have to delete after downloading until we give a unique name(GUID) for each download
+            # consider using a hash from the full URL e.g. hashlib.shake_128 then we don't need to persist it
+            # https://docs.python.org/3/library/hashlib.html
+            if("acast.com" in next_download.url):
+                delete_downloaded_file(next_download.url, self.download_path)
+
             next_download = self.download_queue.get_next()

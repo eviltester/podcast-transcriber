@@ -8,6 +8,24 @@ import re
 def filenameify(aString):
     return re.sub('[^A-Za-z0-9_-]',"-", normalize('NFD', aString.lower()).encode('ascii','ignore').decode('utf-8'))
 
+def delete_downloaded_file(downloadUrl, downloadPath):
+    # TODO: refactor to remove duplicated path creation code with download_if_not_exists
+    parsed_url = urlparse(downloadUrl)
+    path = parsed_url.path
+    filename = filenameify(os.path.basename(path))
+    # todo: could just replace last - with .
+    if filename.endswith("-mp3"):
+        filename = filename + ".mp3"
+    if filename.endswith("-m4a"):
+        filename = filename + ".m4a"
+
+    # delete if the filename exists in the download directory
+    full_download_path = os.path.join(downloadPath, filename)
+    if(os.path.exists(full_download_path)):
+        print("Delete File already downloaded to " + downloadPath)
+        os.remove(full_download_path)
+        return full_download_path
+
 def download_if_not_exists(downloadUrl, downloadPath):
 
     print("Handling download for " + downloadUrl)
