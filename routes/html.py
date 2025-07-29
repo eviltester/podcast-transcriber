@@ -1,11 +1,10 @@
 import fnmatch
 import os
 from pathlib import Path
-
 from flask import Blueprint, render_template_string, render_template
-
 from podcast_episode import load_the_podcast_episode_data_from_file, load_the_podcast_episode_data
 from rss import RssFeed
+from markdown_it import MarkdownIt
 
 html_bp = Blueprint('html', __name__)
 
@@ -27,7 +26,7 @@ def set_podcast_folders_path(a_path):
     podcasts_path = a_path
 
 def get_feeds_list():
-    return feeds
+    return sorted(feeds,key=lambda feed: feed.feedname)
 
 
 def find_pdf_files(directory):
@@ -72,8 +71,10 @@ def get_podcasts():
 def get_episode_list_html(episodes):
     html = "<ul>"
 
-    for key, value in episodes.items():
-        html += f"<li><a href='/episode/{key}'>{value.title}</a></li>"
+    # sort by date reversed order
+    for key in sorted(episodes, key = lambda name: episodes[name].published, reverse=True):
+        value = episodes[key]
+        html += f"<li><a href='/episode/{key}'>{value.title}</a> - {value.published} ({value.duration})</li>"
     html += "</ul>"
 
     return html
@@ -105,4 +106,32 @@ def get_podcast(name):
 def get_episode(podcastname, episodetitle):
 
     an_episode = load_the_podcast_episode_data(podcasts_path, podcastname, episodetitle)
-    return render_template('episode.html', episode=an_episode)
+
+    md = MarkdownIt()
+
+    episode_summary_html = md.render(an_episode.summary)
+
+    summary_html=""
+    summary_path = os.path.join(podcasts_path, podcastname, episodetitle, "summary-" + episodetitle + ".md")
+    if os.path.exists(summary_path):
+        with open(summary_path, 'r') as file:
+            summary_md = file.read()
+
+        summary_html = md.render(summary_md)
+
+    transcript_path = os.path.join(podcasts_path, podcastname, episodetitle, episodetitle + "-base.para.md")
+
+    transcript_html=""
+    if os.path.exists(transcript_path):
+        with open(transcript_path, 'r') as file:
+            transcript_md = file.read()
+        transcript_html = md.render(transcript_md)
+
+    return render_template(
+        'episode.html',
+        episode=an_episode,
+        official_summary=episode_summary_html,
+        summary_html=summary_html,
+        transcript_html=transcript_html,
+        podcast_path= podcastname
+    )

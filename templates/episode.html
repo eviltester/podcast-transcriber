@@ -2,8 +2,42 @@
 
 {% block content %}
 
+<ul><li><a href="/podcasts/{{podcast_path}}">episodes list</a></li></ul>
+
 <h1>Podcast: {{ episode.podcastName }}</h1>
 <h2>Episode: {{ episode.title }}</h2>
 
+<img style="max-width: 25%; height: auto; " src="{{episode.imageUrl}}"/>
+
+<ul>
+    <li>Show Notes: <a href="{{episode.show_notes_url}}" target="_blank">{{episode.show_notes_url}}</a></li>
+    <li>Download: <a href="{{episode.download_url}}" target="_blank">{{episode.download_url}}</a></li>
+    <li>Published: <a href="{{episode.published}}" target="_blank">{{episode.published}}</a></li>
+    <li>Duration: <a href="{{episode.duration}}" target="_blank">{{episode.duration}}</a></li>
+    <li>Author: <a href="{{episode.author}}" target="_blank">{{episode.author}}</a></li>
+    {% for link in links %}
+    <li><a href="{{link.value}}" target="_blank">{{ link.key }}</a></li>
+    {% endfor %}
+</ul>
+
+<div>
+{{ official_summary|safe }}
+</div>
+
+<hr/>
+
+<h2>Summary</h2>
+
+<div>
+    {{ summary_html|safe }}
+</div>
+
+<hr/>
+
+<h2>Transcript</h2>
+
+<div>
+    {{ transcript_html|safe }}
+</div>
 
 {% endblock %}
