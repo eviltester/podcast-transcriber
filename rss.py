@@ -61,6 +61,7 @@ class RssFeed:
         self.seen_urls = set()
         self.new_urls = set()
         self.cache_path = ""
+        self.url_safe_feedname = filenameify(feedname)
 
     def add_to_seen_cache(self, anItem):
         if(anItem.download_url in self.seen_urls):

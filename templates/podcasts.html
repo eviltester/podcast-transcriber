@@ -5,7 +5,10 @@
 <h1>RSS Feeds</h1>
 <ul>
     {% for feed in feeds %}
-    <li>{{ feed.feedname }} - {{ feed.feed_rss_url }}</li>
+    <li><a href="/podcasts/{{ feed.url_safe_feedname }}">{{ feed.feedname }}</a></li>
+        <ul>
+            <li>- {{ feed.feed_rss_url }}</li>
+        </ul>
     {% endfor %}
 </ul>
 
