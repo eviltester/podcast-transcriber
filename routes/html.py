@@ -59,6 +59,9 @@ def index():
     # local files do not link
     #pdf_output_files_html = generate_html_list(pdf_files, output_path)
     #print(pdf_output_files_html)
+
+    # TODO: use summarized_items.csv to find the last 20 summarized podcasts and list on screen, sorted by published date
+
     return render_template('index.html', html_list="")
 
 
