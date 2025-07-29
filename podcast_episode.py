@@ -84,7 +84,7 @@ def load_the_podcast_episode_data(basefolder, podcastname, episodetitle):
 def load_the_podcast_episode_data_from_file(aFilePath):
     if not path.exists(aFilePath):
         print("could not find episode data to load " + aFilePath)
-        exit()
+        return None
     else:
         with open(aFilePath, 'r') as f:
             return PodcastEpisode.fromDict(json.load(f))
