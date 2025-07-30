@@ -12,9 +12,9 @@
 <ul>
     <li>Show Notes: <a href="{{episode.show_notes_url}}" target="_blank">{{episode.show_notes_url}}</a></li>
     <li>Download: <a href="{{episode.download_url}}" target="_blank">{{episode.download_url}}</a></li>
-    <li>Published: <a href="{{episode.published}}" target="_blank">{{episode.published}}</a></li>
-    <li>Duration: <a href="{{episode.duration}}" target="_blank">{{episode.duration}}</a></li>
-    <li>Author: <a href="{{episode.author}}" target="_blank">{{episode.author}}</a></li>
+    <li>Published: {{episode.published}}</li>
+    <li>Duration: {{episode.duration}}</li>
+    <li>Author: {{episode.author}}</li>
     {% for link in links %}
     <li><a href="{{link.value}}" target="_blank">{{ link.key }}</a></li>
     {% endfor %}

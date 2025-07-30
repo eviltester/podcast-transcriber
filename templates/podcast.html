@@ -3,6 +3,12 @@
 {% block content %}
 
 <h1>Podcast {{ feed.feedname }}</h1>
+
+
+<div>
+    {{ message_html|safe }}
+</div>
+
 <ul>
     {% for category in feed.categories %}
     <li>{{ category }}</li>

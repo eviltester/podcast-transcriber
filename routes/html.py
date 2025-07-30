@@ -89,21 +89,26 @@ def get_podcast(name):
         if feed.url_safe_feedname == name:
             break
 
+    message_html = ""
+
     if feed != None:
         # load in all folder names and the episodes
         podcast_episodes_folder = os.path.join(podcasts_path, feed.url_safe_feedname)
-        episodes = {}
-        files = os.listdir(podcast_episodes_folder)
-        for a_file in files:
-            if os.path.isdir(os.path.join(podcast_episodes_folder, a_file)):
-                an_episode = load_the_podcast_episode_data(podcasts_path, name, os.path.basename(a_file))
-                if an_episode != None:
-                    episodes[feed.url_safe_feedname + "/" + os.path.basename(a_file)] = an_episode
 
+        episodes = {}
+        if os.path.exists(podcast_episodes_folder):
+            files = os.listdir(podcast_episodes_folder)
+            for a_file in files:
+                if os.path.isdir(os.path.join(podcast_episodes_folder, a_file)):
+                    an_episode = load_the_podcast_episode_data(podcasts_path, name, os.path.basename(a_file))
+                    if an_episode != None:
+                        episodes[feed.url_safe_feedname + "/" + os.path.basename(a_file)] = an_episode
+        else:
+            message_html = "<p>Podcast not found on disk. Perhaps it is still processing?"
 
     episode_list = get_episode_list_html(episodes)
 
-    return render_template('podcast.html', feed=feed, episode_list=episode_list)
+    return render_template('podcast.html', feed=feed, episode_list=episode_list, message_html= message_html)
 
 @html_bp.route('/episode/<podcastname>/<episodetitle>', methods=['GET'])
 def get_episode(podcastname, episodetitle):
