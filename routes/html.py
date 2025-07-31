@@ -1,10 +1,16 @@
 import fnmatch
 import os
+import io
+from ollama import generate
 from pathlib import Path
-from flask import Blueprint, render_template_string, render_template
+from flask import Blueprint, request, render_template_string, render_template
+
+from downloads import filenameify
 from podcast_episode import load_the_podcast_episode_data_from_file, load_the_podcast_episode_data
 from rss import RssFeed
 from markdown_it import MarkdownIt
+
+from summarization import SummarizeQueue
 
 html_bp = Blueprint('html', __name__)
 
@@ -25,8 +31,36 @@ def set_podcast_folders_path(a_path):
     global podcasts_path
     podcasts_path = a_path
 
+
+def set_cache_files(download_csv, downloaded_csv, summarize_csv, summarized_csv):
+    global download_csv_cache, downloaded_csv_cache, summarize_queue_csv_cache, summarized_csv_cache
+
+    download_csv_cache= download_csv
+    downloaded_csv_cache = downloaded_csv
+    summarize_queue_csv_cache = summarize_csv
+    summarized_csv_cache = summarized_csv
+
 def get_feeds_list():
     return sorted(feeds,key=lambda feed: feed.feedname)
+
+def get_recent_episodes():
+
+    recent_episodes = {}
+
+    summarize_queue = SummarizeQueue(summarize_queue_csv_cache, summarized_csv_cache)
+
+    # this approach doesn't work if we have just added a new podcast, we should really scan all episodes and get the most recent
+    done_count = len(summarize_queue.done)
+    recent_limit = done_count-30
+    while done_count > recent_limit:
+
+        done_count = done_count-1
+        a_recent_episode = summarize_queue.done[done_count]
+        an_episode = load_the_podcast_episode_data(podcasts_path, a_recent_episode.podcast_name, a_recent_episode.episode_title)
+        if an_episode != None:
+            recent_episodes[filenameify(a_recent_episode.podcast_name) + "/" + filenameify(a_recent_episode.episode_title)] = an_episode
+
+    return recent_episodes
 
 
 def find_pdf_files(directory):
@@ -60,10 +94,45 @@ def index():
     #pdf_output_files_html = generate_html_list(pdf_files, output_path)
     #print(pdf_output_files_html)
 
-    # TODO: use summarized_items.csv to find the last 20 summarized podcasts and list on screen, sorted by published date
+    # TODO: use summarized_items.csv to find the last x0 summarized podcasts and list on screen, sorted by published date
+    recent_episodes = get_recent_episodes()
+    recent_episodes_html = get_episode_list_html(recent_episodes, True)
 
-    return render_template('index.html', html_list="")
+    return render_template('index.html', html_list="", recent_episodes_html = recent_episodes_html)
 
+@html_bp.route('/ollamaexec', methods=['GET','POST'])
+def post_process_with_ollama():
+    if request.method == 'POST':
+        modelname = request.form['modelname'].strip()
+        file = request.files['filepath']
+        filename = file.filename
+        filecontent = io.StringIO(file.read().decode('utf-8')).getvalue()
+        prompt = request.form['prompt']
+
+        given_number_of_times_to_repeat_prompt = int(request.form['repeat'].strip())
+        number_of_times_to_repeat_prompt = given_number_of_times_to_repeat_prompt
+
+        responses = []
+        send_prompt = f"{prompt} {filecontent}"
+
+        while number_of_times_to_repeat_prompt > 0:
+            response = generate(model=modelname, prompt=send_prompt)
+            responses.append(response)
+            number_of_times_to_repeat_prompt -= 1
+
+        response_html = f"<p>done {modelname} {filename}</p><p>{prompt}</p>"
+
+        for aresponse in responses:
+            response_html += f"\n<hr/><div><pre>{aresponse.response}</pre></div>"
+
+        return render_template(
+            'ollama.html',
+            response_html=response_html,
+            given_modelname = modelname,
+            given_prompt = prompt,
+            given_repeat_number = given_number_of_times_to_repeat_prompt
+        )
+    return render_template('ollama.html')
 
 @html_bp.route('/podcasts', methods=['GET'])
 def get_podcasts():
@@ -71,13 +140,16 @@ def get_podcasts():
     return render_template('podcasts.html', feeds=feeds)
 
 
-def get_episode_list_html(episodes):
+def get_episode_list_html(episodes, include_podcast_name):
     html = "<ul>"
 
     # sort by date reversed order
     for key in sorted(episodes, key = lambda name: episodes[name].published, reverse=True):
         value = episodes[key]
-        html += f"<li><a href='/episode/{key}'>{value.title}</a> - {value.published} ({value.duration})</li>"
+        podcast_name = ""
+        if include_podcast_name:
+            podcast_name = value.podcastName + " - "
+        html += f"<li>{podcast_name} <a href='/episode/{key}'>{value.title}</a> - {value.published} ({value.duration})</li>"
     html += "</ul>"
 
     return html
@@ -106,7 +178,7 @@ def get_podcast(name):
         else:
             message_html = "<p>Podcast not found on disk. Perhaps it is still processing?"
 
-    episode_list = get_episode_list_html(episodes)
+    episode_list = get_episode_list_html(episodes, False)
 
     return render_template('podcast.html', feed=feed, episode_list=episode_list, message_html= message_html)
 

@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Process File with Prompt using Ollama</h1>
+
+<form method="POST" action = "/ollamaexec" enctype="multipart/form-data">
+    <div class = "form-group">
+        <input type="text" name = "modelname" value="{{given_modelname}}"/><br/>
+        <input type="file" name = "filepath""/><br/>
+        <p><label for="repeat">Number of times to repeat prompt:</label></p>
+        {% if given_repeat_number %}
+            <input type="number" id="repeat" name="repeat" min="1" max="25" value="{{given_repeat_number}}"><br/>
+        {% else %}
+            <input type="number" id="repeat" name="repeat" min="1" max="25" value="1"><br/>
+        {% endif %}
+        <p><label for="prompt">Prompt to send:</label></p>
+        <textarea id="prompt" name="prompt"  rows="4" cols="50" style="resize: both;">{{given_prompt}}</textarea>
+
+    </div>
+    <input class="btn btn-primary" type="submit" value="submit">
+</form>
+
+<hr/>
+
+<div>
+    {{ response_html|safe }}
+</div>
+
+{% endblock %}

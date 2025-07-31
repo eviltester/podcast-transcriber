@@ -47,7 +47,8 @@ TODO: try https://github.com/huggingface/distil-whisper
 '''
 
 from flask import Flask
-from routes.html import html_bp, set_feeds_list, set_output_report_path, output_path, set_podcast_folders_path
+from routes.html import html_bp, set_feeds_list, set_output_report_path, output_path, set_podcast_folders_path, \
+    set_cache_files
 from routes.api import api_bp, define_cache_files, define_paths, define_rssList
 
 app = Flask(__name__)
@@ -158,6 +159,7 @@ define_rssList(rssList)
 set_feeds_list(rssList.feeds)
 set_output_report_path(os.path.join(outputPath, "output-reports"))
 set_podcast_folders_path(outputPath)
+set_cache_files(download_csv_cache, downloaded_csv_cache, summarize_queue_csv_cache, summarized_csv_cache)
 
 # Register blueprints
 app.register_blueprint(api_bp, url_prefix='/api')

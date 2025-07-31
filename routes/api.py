@@ -18,6 +18,7 @@ summarize_queue_csv_cache = ""
 rssList = None
 downloadPath = ""
 outputPath = ""
+singleton_process_all_running = False
 
 def define_cache_files(download_csv, downloaded_csv, summarize_csv, summarized_csv):
     global download_csv_cache, downloaded_csv_cache, summarize_queue_csv_cache, summarized_csv_cache
@@ -39,6 +40,14 @@ def define_rssList(rss_list):
 
 @api_bp.route('/processall', methods=['POST'])
 def post_process_all():
+
+    global singleton_process_all_running
+
+    if singleton_process_all_running:
+        print("already processing all")
+        return jsonify({"message": "Already Running Process All"}), 200
+
+    singleton_process_all_running = True
     download_queue = DownloadQueue(download_csv_cache, downloaded_csv_cache)
 
     # get the summarize queue
@@ -79,5 +88,7 @@ def post_process_all():
         reporter.generate_reports_for(fromDate, toDate, "testing", [], ["testing"], rssList.feeds)
         reporter.generate_reports_for(fromDate, toDate, "ai", [], ["ai"], rssList.feeds)
         reporter.generate_reports_for(fromDate, toDate, "business_marketing", [], ["business","marketing"], rssList.feeds)
+
+    singleton_process_all_running = False
 
     return jsonify({"message": "Processed Everything"}), 200
