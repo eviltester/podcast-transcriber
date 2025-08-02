@@ -14,31 +14,31 @@ from summarization import SummarizeQueue
 
 html_bp = Blueprint('html', __name__)
 
+rss_list = None
 feeds = []
-output_path = None
+report_output_path = None
 podcasts_path = None
+
+def set_rsslist(an_rss_list):
+    global rss_list
+    rss_list = an_rss_list
+
+    set_feeds_list(rss_list.feeds)
+    set_output_report_path(os.path.join(rss_list.output_path, "output-reports"))
+    set_podcast_folders_path(rss_list.output_path)
 
 def set_feeds_list(list_of_feeds):
     global feeds
     feeds = list_of_feeds
 
-
 def set_output_report_path(a_path):
-    global output_path
-    output_path = a_path
+    global report_output_path
+    report_output_path = a_path
 
 def set_podcast_folders_path(a_path):
     global podcasts_path
     podcasts_path = a_path
 
-
-def set_cache_files(download_csv, downloaded_csv, summarize_csv, summarized_csv):
-    global download_csv_cache, downloaded_csv_cache, summarize_queue_csv_cache, summarized_csv_cache
-
-    download_csv_cache= download_csv
-    downloaded_csv_cache = downloaded_csv
-    summarize_queue_csv_cache = summarize_csv
-    summarized_csv_cache = summarized_csv
 
 def get_feeds_list():
     return sorted(feeds,key=lambda feed: feed.feedname)
@@ -47,7 +47,8 @@ def get_recent_episodes():
 
     recent_episodes = {}
 
-    summarize_queue = SummarizeQueue(summarize_queue_csv_cache, summarized_csv_cache)
+    # TODO: share the same queue
+    summarize_queue = SummarizeQueue(rss_list.summarize_queue_csv_cache, rss_list.summarized_csv_cache)
 
     # this approach doesn't work if we have just added a new podcast, we should really scan all episodes and get the most recent
     done_count = len(summarize_queue.done)
@@ -89,9 +90,9 @@ def generate_html_list(pdf_files, parent_dir):
 
 @html_bp.route('/', methods=['GET'])
 def index():
-    pdf_files = find_pdf_files(output_path)
+    pdf_files = find_pdf_files(report_output_path)
     # local files do not link
-    #pdf_output_files_html = generate_html_list(pdf_files, output_path)
+    #pdf_output_files_html = generate_html_list(pdf_files, report_output_path)
     #print(pdf_output_files_html)
 
     # TODO: use summarized_items.csv to find the last x0 summarized podcasts and list on screen, sorted by published date
@@ -104,19 +105,57 @@ def index():
 def post_process_with_ollama():
     if request.method == 'POST':
         modelname = request.form['modelname'].strip()
+        given_suffix = request.form['suffix'].strip()
         file = request.files['filepath']
         filename = file.filename
         filecontent = io.StringIO(file.read().decode('utf-8')).getvalue()
         prompt = request.form['prompt']
 
+        system_prompt = request.form['system'].strip()
+
+        given_systemprompt = None
+        if len(system_prompt) > 0:
+            given_systemprompt = system_prompt
+
         given_number_of_times_to_repeat_prompt = int(request.form['repeat'].strip())
         number_of_times_to_repeat_prompt = given_number_of_times_to_repeat_prompt
 
         responses = []
+
+        given_options = request.form['options'].strip()
+        options_to_parse = given_options.split("\n")
+        options_as_dict = {}
+        for an_option in options_to_parse:
+            name_value = an_option.split("=")
+            if len(name_value) >= 2:
+                a_name = name_value[0].strip()
+                a_value = name_value[1].strip()
+                if len(a_name) > 0 and len(a_value) > 0:
+                    options_as_dict[a_name] = a_value
+
+        if len(options_as_dict) == 0:
+            options_as_dict = None
+
+        filecontent_output = filecontent
+        if len(filecontent)>50:
+            filecontent_output = f"{filecontent[0:50]}..."
+
+        print(f"{prompt} {filecontent_output}")
+
         send_prompt = f"{prompt} {filecontent}"
 
+        # https://github.com/ollama/ollama-python/blob/main/ollama/_client.py
+        # https://github.com/ollama/ollama/blob/main/docs/api.md#generate-a-completion
+        # https://docs.unsloth.ai/basics/qwen3-how-to-run-and-fine-tune#official-recommended-settings
+
         while number_of_times_to_repeat_prompt > 0:
-            response = generate(model=modelname, prompt=send_prompt)
+            response = generate(
+                model=modelname,
+                prompt=send_prompt,
+                system = given_systemprompt,
+                options = options_as_dict,
+                suffix = given_suffix
+            )
             responses.append(response)
             number_of_times_to_repeat_prompt -= 1
 
@@ -130,9 +169,14 @@ def post_process_with_ollama():
             response_html=response_html,
             given_modelname = modelname,
             given_prompt = prompt,
-            given_repeat_number = given_number_of_times_to_repeat_prompt
+            given_repeat_number = given_number_of_times_to_repeat_prompt,
+            given_systemprompt = system_prompt,
+            given_options = given_options,
+            given_suffix = given_suffix
         )
-    return render_template('ollama.html')
+
+    else:
+        return render_template('ollama.html')
 
 @html_bp.route('/podcasts', methods=['GET'])
 def get_podcasts():

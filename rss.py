@@ -1,4 +1,5 @@
 import csv
+import os
 
 import feedparser
 from os import path
@@ -24,9 +25,48 @@ class HtmlTagRemover(HTMLParser):
     def get_data(self):
         return ''.join(self.result)
 
+class RssList:
+    def __init__(self, name):
+        self.name = name
+        self.feeds = []
+        self.config_path = None
+        self.cache_path = None
+        self.download_path = None
+        self.output_path = None
+
+        # main queues
+        self.download_csv_cache = None
+        self.downloaded_csv_cache = None
+        self.summarize_queue_csv_cache = None
+        self.summarized_csv_cache = None
+
+    def set_config_path(self, config_path):
+        self.config_path = config_path
+
+    def set_cache_path(self, cache_path):
+        self.cache_path = cache_path
+        self.download_csv_cache = os.path.join(cache_path, "download_queue.csv")
+        self.downloaded_csv_cache = os.path.join(cache_path, "downloaded_items.csv")
+        self.summarize_queue_csv_cache = os.path.join(cache_path, "summarize_queue.csv")
+        self.summarized_csv_cache = os.path.join(cache_path, "summarized_items.csv")
+
+    def set_download_path(self, download_path):
+        self.download_path = download_path
+
+    def set_output_path(self, output_path):
+        self.output_path = output_path
+
+    def print_path_config(self):
+        print("----")
+        print(f"CONFIG: {self.name}")
+        print(f"**UNUSED** Config Path: {self.config_path}")
+        print(f"Download Path: {self.download_path}")
+        print(f"Output Path: {self.output_path}")
+        print(f"Cache Path: {self.cache_path}")
+        print("----")
+
+
 class RssListReader:
-    # CSV file with
-    # feed name, feedurl
     def __init__(self, filepath):
         self.filepath = filepath
         self.feeds = []

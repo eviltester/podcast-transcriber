@@ -11,28 +11,8 @@ from summarize_queue_processor import SummarizeQueueProcessor
 
 api_bp = Blueprint('api', __name__)
 
-download_csv_cache = ""
-downloaded_csv_cache = ""
-summarized_csv_cache = ""
-summarize_queue_csv_cache = ""
 rssList = None
-downloadPath = ""
-outputPath = ""
 singleton_process_all_running = False
-
-def define_cache_files(download_csv, downloaded_csv, summarize_csv, summarized_csv):
-    global download_csv_cache, downloaded_csv_cache, summarize_queue_csv_cache, summarized_csv_cache
-
-    download_csv_cache= download_csv
-    downloaded_csv_cache = downloaded_csv
-    summarize_queue_csv_cache = summarize_csv
-    summarized_csv_cache = summarized_csv
-
-
-def define_paths(download_path, output_path):
-    global downloadPath, outputPath
-    downloadPath = download_path
-    outputPath = output_path
 
 def define_rssList(rss_list):
     global rssList
@@ -42,24 +22,29 @@ def define_rssList(rss_list):
 def post_process_all():
 
     global singleton_process_all_running
+    global rssList
 
     if singleton_process_all_running:
         print("already processing all")
         return jsonify({"message": "Already Running Process All"}), 200
 
+    if rssList is None:
+        print("Rss List is not configured")
+        return jsonify({"message": "Rss List Not Configured"}), 428
+
     singleton_process_all_running = True
-    download_queue = DownloadQueue(download_csv_cache, downloaded_csv_cache)
+    download_queue = DownloadQueue(rssList.download_csv_cache, rssList.downloaded_csv_cache)
 
     # get the summarize queue
-    summarize_queue = SummarizeQueue(summarize_queue_csv_cache, summarized_csv_cache)
+    summarize_queue = SummarizeQueue(rssList.summarize_queue_csv_cache, rssList.summarized_csv_cache)
 
-    feed_scanner = RssFeedScanner(outputPath, download_queue, rssList, downloadPath)
+    feed_scanner = RssFeedScanner(rssList.output_path, download_queue, rssList, rssList.download_path)
     feed_scanner.scan_for_new_podcasts()
 
-    download_queue_processor = DownloadAndTranscribeProcessor(download_queue, summarize_queue, downloadPath, outputPath)
+    download_queue_processor = DownloadAndTranscribeProcessor(download_queue, summarize_queue, rssList.download_path, rssList.output_path)
     download_queue_processor.download_transcribe_and_queue_for_summarization()
 
-    summarize_processor = SummarizeQueueProcessor(summarize_queue, outputPath, rssList.feeds)
+    summarize_processor = SummarizeQueueProcessor(summarize_queue, rssList.output_path, rssList.feeds)
     summarize_processor.summarize_all()
 
     # TODO: auto build the summary pdfs by category and date range config
@@ -84,9 +69,9 @@ def post_process_all():
         #todo: create reports based on categories e.g. testing, ai, etc. (this needs to be defined at a podcast feed meta-data level on podcastname)
         #podcast_names_to_exclude = ["MLOps.community","Technovation", "Fastlane Founders"]
 
-        reporter = PandocReportGenerator(outputPath, outputReportFolderName)
+        reporter = PandocReportGenerator(rssList.output_path, outputReportFolderName)
         reporter.generate_reports_for(fromDate, toDate, "testing", [], ["testing"], rssList.feeds)
-        reporter.generate_reports_for(fromDate, toDate, "ai", [], ["ai"], rssList.feeds)
+        reporter.generate_reports_for(fromDate, toDate, "ai_dev", [], ["ai","development"], rssList.feeds)
         reporter.generate_reports_for(fromDate, toDate, "business_marketing", [], ["business","marketing"], rssList.feeds)
 
     singleton_process_all_running = False

@@ -6,8 +6,18 @@
 
 <form method="POST" action = "/ollamaexec" enctype="multipart/form-data">
     <div class = "form-group">
-        <input type="text" name = "modelname" value="{{given_modelname}}"/><br/>
-        <input type="file" name = "filepath""/><br/>
+
+        <label for="modelname">Model Name:</label>
+        <input id="modelname" type="text" name = "modelname" value="{{given_modelname}}"/><br/>
+
+        <input type="file" name = "filepath"/><br/>
+
+        <label for="suffix">Response Suffix:</label>
+        <input id="suffix" type="text" name = "suffix" value="{{given_suffix}}"/><br/>
+
+        <p><label for="system">System prompt:</label><br/>
+        <textarea id="system" name="system" rows="4" cols="50" style="resize: both;">{{given_systemprompt}}</textarea><br/>
+
         <p><label for="repeat">Number of times to repeat prompt:</label></p>
         {% if given_repeat_number %}
             <input type="number" id="repeat" name="repeat" min="1" max="25" value="{{given_repeat_number}}"><br/>
@@ -16,6 +26,10 @@
         {% endif %}
         <p><label for="prompt">Prompt to send:</label></p>
         <textarea id="prompt" name="prompt"  rows="4" cols="50" style="resize: both;">{{given_prompt}}</textarea>
+
+
+        <p><label for="options">Options (each option on new line, `name = value`)</label><br/>
+        <textarea id="options" name="options" rows="4" cols="50" style="resize: both;">{{given_options}}</textarea><br/>
 
     </div>
     <input class="btn btn-primary" type="submit" value="submit">
