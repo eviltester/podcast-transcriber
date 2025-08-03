@@ -56,6 +56,8 @@ def generateMarkdownSummaryReport(outputPath, podcastName, episodeTitle, podcast
             f.write(f"- [Download]({episode.download_url}) [_[link]({episode.download_url})_]\n")
         for link in episode.links:
             f.write(f"- [{link}]({episode.links[link]}) [_[link]({episode.links[link]})_]\n")
-        if episode.summary != "":
-            f.write(f"\n\n---\n\n{episode.summary}\n\n---\n\n")
+
+        # if episode.summary != "":
+        #     f.write(f"\n\n---\n\n{episode.summary}\n\n---\n\n")
+
         f.write(f"\n\n{summary}\n\n")

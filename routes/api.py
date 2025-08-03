@@ -1,11 +1,15 @@
+import os
+
 from flask import Blueprint, jsonify
 from dateutil.parser import parse
 
 from download_transcribe_processor import DownloadAndTranscribeProcessor
-from downloads import DownloadQueue
+from downloads import DownloadQueue, filenameify
+from markdownReporter import generateMarkdownSummaryReport
 from reports.pandoc_report_generator import PandocReportGenerator
 from reports.report_time_span_defn import ReportTimeSpanDefn
 from rss_feed_scanner import RssFeedScanner
+from summarise_using_ollama import summarizeTranscriptFile
 from summarization import SummarizeQueue
 from summarize_queue_processor import SummarizeQueueProcessor
 
@@ -17,6 +21,25 @@ singleton_process_all_running = False
 def define_rssList(rss_list):
     global rssList
     rssList = rss_list
+
+@api_bp.route('/regeneratesummary/<podcast_path>/<episode_path>', methods=['POST'])
+def post_regenerate_episode_summary(podcast_path, episode_path):
+    fileToRead = os.path.join(rssList.output_path, filenameify(podcast_path), filenameify(episode_path), filenameify(episode_path) + "-base.para.md")
+    if os.path.exists(fileToRead):
+        summarizeTranscriptFile(fileToRead)
+        generateMarkdownSummaryReport(rssList.output_path, podcast_path, episode_path, rssList.get_podcast_details(podcast_path))
+        return jsonify({"message": "Regenerated Summary"}), 200
+    else:
+        return jsonify({"message": f"Could not find episode to regenerate {fileToRead}"}), 404
+
+@api_bp.route('/regeneratemarkdownsummary/<podcast_path>/<episode_path>', methods=['POST'])
+def post_regenerate_episode_markdown_summary(podcast_path, episode_path):
+    fileToRead = os.path.join(rssList.output_path, filenameify(podcast_path), filenameify(episode_path), filenameify(episode_path) + "-base.para.md")
+    if os.path.exists(fileToRead):
+        generateMarkdownSummaryReport(rssList.output_path, podcast_path, episode_path, rssList.get_podcast_details(podcast_path))
+        return jsonify({"message": "Regenerated Markdown Summary"}), 200
+    else:
+        return jsonify({"message": f"Could not find episode to regenerate {fileToRead}"}), 404
 
 @api_bp.route('/processall', methods=['POST'])
 def post_process_all():

@@ -257,5 +257,6 @@ def get_episode(podcastname, episodetitle):
         official_summary=episode_summary_html,
         summary_html=summary_html,
         transcript_html=transcript_html,
-        podcast_path= podcastname
+        podcast_path= podcastname,
+        episode_path = episodetitle
     )

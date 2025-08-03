@@ -65,6 +65,12 @@ class RssList:
         print(f"Cache Path: {self.cache_path}")
         print("----")
 
+    def get_podcast_details(self, podcast_name):
+        if self.feeds is not None:
+            for podcast in self.feeds:
+                if podcast_name == podcast.feedname or podcast_name == filenameify(podcast.feedname):
+                    return podcast
+        return None
 
 class RssListReader:
     def __init__(self, filepath):
