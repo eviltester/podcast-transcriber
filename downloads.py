@@ -26,12 +26,13 @@ def delete_downloaded_file(downloadUrl, downloadPath):
         os.remove(full_download_path)
         return full_download_path
 
-def download_if_not_exists(downloadUrl, downloadPath):
+def download_if_not_exists(downloadUrl, downloadPath, download_as_filename):
 
     print("Handling download for " + downloadUrl)
     # from download url get the filename
     parsed_url = urlparse(downloadUrl)
     path = parsed_url.path
+    path = download_as_filename
     filename = filenameify(os.path.basename(path))
     # todo: could just replace last - with .
     if filename.endswith("-mp3"):

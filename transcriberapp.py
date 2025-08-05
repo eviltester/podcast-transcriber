@@ -120,7 +120,10 @@ rssList.feeds.append(RssFeed("The Vernon Richard Show", "https://feeds.transisto
 # AI
 rssList.feeds.append(RssFeed("MLOps.community","https://anchor.fm/s/174cb1b8/podcast/rss",["ai"], "https://mlops.community/", ["https://www.youtube.com/@MLOps"], "2025 06 01 00:00:01 UTC"))
 # Business
+
 rssList.feeds.append(RssFeed("Technovation","https://www.metisstrategy.com/interview/feed/podcast/",["business"], "https://www.metisstrategy.com/podcast-overview/", ["https://www.youtube.com/playlist?list=PLo67eg0gOxoDzmwXgoITSDVSgMoJxkXH3"], "2025 01 01 00:00:01 UTC"))
+rssList.feeds.append(RssFeed("Build Your Edge","https://api.riverside.fm/hosting/kootpfl4.rss",["business"], "https://open.spotify.com/show/2BQTeyVEumrbVST6s9Alkh", [], "2025 08 01 00:00:01 UTC"))
+
 # Marketing
 rssList.feeds.append(RssFeed("Fastlane Founders","https://fastlanefounders.com/feed/podcast/",["marketing"], "https://fastlanefounders.com/", [], "2025 01 01 00:00:01 UTC"))
 # Development
