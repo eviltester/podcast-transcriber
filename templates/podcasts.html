@@ -2,14 +2,34 @@
 
 {% block content %}
 
-<h1>RSS Feeds</h1>
+<h1>{{category_name}} Rss Feeds</h1>
+
+<h2>Categories</h2>
+<ul>
+    {% for category in categories %}
+    <li><a href="/category/{{category}}">{{ category }}</a></li>
+    {% endfor %}
+</ul>
+
+<h2>{{category_name}} Feeds</h2>
+
 <ul>
     {% for feed in feeds %}
     <li><a href="/podcasts/{{ feed.url_safe_feedname }}">{{ feed.feedname }}</a></li>
         <ul>
-            <li>- {{ feed.feed_rss_url }}</li>
+            <li><a href="{{ feed.homeUrl }}" target="_blank">{{ feed.homeUrl }}</a></li>
         </ul>
     {% endfor %}
 </ul>
+
+{% for pre in pres %}
+<div>
+    <hr/>
+    <pre>
+{{pre}}
+    </pre>
+</div>
+{% endfor %}
+
 
 {% endblock %}

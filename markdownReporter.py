@@ -31,6 +31,9 @@ def generateMarkdownSummaryReport(outputPath, podcastName, episodeTitle, podcast
 
         if podcast_details is not None:
             f.write(f"\n\n**Podcast Details: {podcast_details.feedname}**\n\n")
+
+            f.write(f"\n\n{podcast_details.description}\n\n")
+
             f.write(f"\n\n- URL: [_[{podcast_details.homeUrl}]({podcast_details.homeUrl})_]\n\n")
 
             if len(podcast_details.hrefs) != 0:

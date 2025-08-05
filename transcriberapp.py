@@ -57,7 +57,7 @@ print(os.name)
 if os.name == 'nt':
     print("running on windows")
     downloadPath = "d:/downloads"
-    outputPath = "d:/git/dev/python/podcast-transcriptions"
+    outputPath = "d:/podcast-transcriptions"
 else:
     print("running on mac?")
     # mac config - TODO: move to a config file and start app with config file name
@@ -77,14 +77,7 @@ rssList.set_output_path(outputPath)
 rssList.print_path_config()
 
 
-# TODO: add paths and names to the rssList
-#  - rsslist_name e.g. podcasts
-#  - config_path (where this config file is stored),
-#  - cache_path (where queues are stored, by default a rsslist-name-cache folder under config_path)
-#  - a download_path where mp3s etc. are downloaded
-#  - an output_path where all the transcriptions and reports are saved
-# TODO: make rsslist the main object passed between everything for paths
-# TODO: add a summary, and description field for each podcast
+# TODO: add a summary/description field for each podcast
 # TODO: persist rssList to a file
 # TODO: read from a file
 # TODO: UI ability to read from a file
@@ -92,38 +85,33 @@ rssList.print_path_config()
 
 
 
+# find a podcast rss feed https://castos.com/tools/find-podcast-rss-feed/
+# find a podcast rss feed from apple podcast link https://www.labnol.org/podcast
 
 # Testing podcasts
-rssList.feeds.append(RssFeed("The EvilTester Show", "https://feed.pod.co/the-evil-tester-show", ["testing"], "https://eviltester.com/show", ["https://eviltester.com"]))
-rssList.feeds.append(RssFeed("The Testing Peers", "https://feeds.buzzsprout.com/1078751.rss", ["testing"], "https://testingpeers.com/", ["https://www.youtube.com/playlist?list=PLgToaFvlUC7mruBdL9eQDS3WFcpg9ooeI"], "2025 06 01 00:00:01 UTC"))
-rssList.feeds.append(RssFeed("AB Testing", "https://anchor.fm/s/45580f58/podcast/rss", ["testing"], "https://www.moderntesting.org/", [], "2025 04 01 00:00:01 UTC"))
-
-rssList.feeds.append(RssFeed("Test Guild", "https://testtalks.libsyn.com/rss", ["testing"], "https://testguild.com/", ["https://testguild.com/podcasts/automation/", "https://www.youtube.com/playlist?list=PL9AgRtJkydU1jqvx46esyr56BXtm1QEds", "https://www.youtube.com/@JoeColantonio", "2025 06 01 00:00:01 UTC"]))
-rssList.feeds.append(RssFeed("Test Guild News Show","https://testguildnews.libsyn.com/rss", ["testing"], "https://testguild.com/podcasts/news/", ["https://testguild.com/podcasts/news/", "https://www.youtube.com/playlist?list=PL9AgRtJkydU1WSjOuUkOeRFTDN5dPyL6u"], "2025 06 01 00:00:01 UTC"))
-rssList.feeds.append(RssFeed("Test Guild Devops Toolchain Podcast","https://testguildperf.libsyn.com/rss", ["testing"], "https://testguild.com/podcasts/performance/", ["https://testguild.com/podcasts/performance/", "https://www.youtube.com/playlist?list=PL9AgRtJkydU3pQfcrQmDrGMbx3aNMnLnW"], "2025 06 01 00:00:01 UTC"))
-rssList.feeds.append(RssFeed("Test Guild Security Testing Podcast","https://testguildsecure.libsyn.com/rss", ["testing"], "https://www.youtube.com/playlist?list=PL9AgRtJkydU3JzSZcwWxMwrrzg9SSGWwH", ["https://www.youtube.com/playlist?list=PL9AgRtJkydU3JzSZcwWxMwrrzg9SSGWwH"], "2025 06 01 00:00:01 UTC"))
-rssList.feeds.append(RssFeed("Test Guild ZapTalk Podcast","https://feeds.buzzsprout.com/2426420.rss", ["testing"], "https://testguild.com/podcasts/zaptalk/", ["https://www.youtube.com/playlist?list=PL9AgRtJkydU1DWqrt1ilthObjql7zvPZ5"], "2025 04 01 00:00:01 UTC"))
-
-rssList.feeds.append(RssFeed("Software Testing Unleashed","https://testing-unleashed.podigee.io/feed/mp3", ["testing"], "https://www.richard-seidl.com/en/testing-unleashed", ["https://www.youtube.com/playlist?list=PL48Mbm-L0hjB1OdwYi9h7jrq9t352-Zk_"], "2025 04 01 00:00:01 UTC"))
-
-rssList.feeds.append(RssFeed("Quality Sense Podcast","https://feeds.soundcloud.com/users/soundcloud:users:815108872/sounds.rss", ["testing"], "https://abstracta.us/software-testing-podcast", ["https://www.youtube.com/playlist?list=PLquWeW1pThUEqpUW6o_KDhfcp7PXMMFW3"], "2025 04 01 00:00:01 UTC"))
-
-rssList.feeds.append(RssFeed("The Vernon Richard Show", "https://feeds.transistor.fm/the-vernon-richard-show", ["testing"], "https://thevernonrichardshow.com/", ["https://www.youtube.com/@TheVernonRichardShow"], "2025 06 01 00:00:01 UTC"))
-rssList.feeds.append(RssFeed("The Testing Show", "https://thetestingshow.libsyn.com/rss", ["testing"], "https://www.qualitestgroup.com/insights/podcasts/", [], "2025 06 01 00:00:01 UTC"))
-rssList.feeds.append(RssFeed("The Engineering Quality Podcast", "https://anchor.fm/s/f6a276e0/podcast/rss", ["testing"], "https://www.engineeringqualitypodcast.com/", [], "2025 06 01 00:00:01 UTC"))
-rssList.feeds.append(RssFeed("Applause Ready Test Go", "https://fast.wistia.com/channels/1b8462lt0q/rss", ["testing"], "https://www.applause.com/podcasts/", [], "2025 06 01 00:00:01 UTC"))
-rssList.feeds.append(RssFeed("Quality Remarks","https://www.spreaker.com/show/2507151/episodes/feed", ["testing"], "https://qualityremarks.com/", ["https://qualityremarks.com/qr-podcast/", "https://www.youtube.com/@KeithKlain"], "2025 06 01 00:00:01 UTC"))
-rssList.feeds.append(RssFeed("Test and Code","https://feeds.transistor.fm/test-and-code", ["testing"], "https://testandcode.com/", ["https://testandcode.com/archive"], "2025 04 01 00:00:01 UTC"))
-rssList.feeds.append(RssFeed("MOT This Week in Testing","https://fast.wistia.com/channels/czgwdadw2c/rss", ["testing"], "https://www.ministryoftesting.com/podcasts", ["https://www.ministryoftesting.com"], "2025 06 01 00:00:01 UTC"))
-
+rssList.feeds.append(RssFeed("AB Testing", "https://anchor.fm/s/45580f58/podcast/rss", ["testing"], "https://www.moderntesting.org/", [], "2025 04 01 00:00:01 UTC", "AB Testing - Each episode is a chat between Brent Jensen and Alan Page with an occasional special guest."))
+rssList.feeds.append(RssFeed("Applause Ready Test Go", "https://fast.wistia.com/channels/1b8462lt0q/rss", ["testing"], "https://www.applause.com/podcasts/", [], "2025 06 01 00:00:01 UTC", "Applause - Ready Test Go - Official podcast from Crowdtesting company Applause. The show notes have full episode descriptions and transcripts. Released as audio and video."))
+rssList.feeds.append(RssFeed("MOT This Week in Testing","https://fast.wistia.com/channels/czgwdadw2c/rss", ["testing"], "https://www.ministryoftesting.com/podcasts", ["https://www.ministryoftesting.com"], "2025 06 01 00:00:01 UTC","MOT - This week in Testing - Varied hosts, group chat, often with community questions and involvement."))
+rssList.feeds.append(RssFeed("Quality Blether","https://feeds.acast.com/public/shows/quality-blether", ["testing"], "https://shows.acast.com/quality-blether", [], "2025 01 01 00:00:01 UTC", "Quality Blether is the official podcast of the Scottish Testing Group. Episodes are guest interview based."))
+rssList.feeds.append(RssFeed("Quality Remarks","https://www.spreaker.com/show/2507151/episodes/feed", ["testing"], "https://qualityremarks.com/", ["https://qualityremarks.com/qr-podcast/", "https://www.youtube.com/@KeithKlain"], "2025 06 01 00:00:01 UTC", "Quality Remarks is the podcast from Keith Klain. Each episode has a different guest. Recorded as audio and video."))
+rssList.feeds.append(RssFeed("Quality Sense Podcast","https://feeds.soundcloud.com/users/soundcloud:users:815108872/sounds.rss", ["testing"], "https://abstracta.us/software-testing-podcast", ["https://www.youtube.com/playlist?list=PLquWeW1pThUEqpUW6o_KDhfcp7PXMMFW3"], "2025 04 01 00:00:01 UTC", "Quality Sense is a podcast from Testing Consultancy Abstracta. Released as audio and video."))
+rssList.feeds.append(RssFeed("Quality Talks","https://anchor.fm/s/f6e76df4/podcast/rss", ["testing"], "https://qualitytalks.co.uk/podcast", ["https://www.youtube.com/@QualityTalksPodcast"], "2025 04 01 00:00:01 UTC", "Quality Talks is  Stu Day and Chris Henderson and different guest each episode. Released as audio and video. The official Show notes have summary, key points and time stamped chapters."))
+rssList.feeds.append(RssFeed("Saucelabs Test Case Scenario","https://feeds.buzzsprout.com/2129346.rss", ["testing"], "https://www.youtube.com/@SauceLabs_Official/podcasts", [], "2025 04 01 00:00:01 UTC", "Saucelabs Test Case Scenario is an offical podcast from Saucelabs, usually with a different guest. Released as audio and video."))
+rssList.feeds.append(RssFeed("Software Testing Unleashed","https://testing-unleashed.podigee.io/feed/mp3", ["testing"], "https://www.richard-seidl.com/en/testing-unleashed", ["https://www.youtube.com/playlist?list=PL48Mbm-L0hjB1OdwYi9h7jrq9t352-Zk_"], "2025 04 01 00:00:01 UTC", "Software Testing Unleashed - hosted by Richard Seidl. Different guest per episode. The official Show notes contain a comprehensive overview of the episode. Released as audio and video."))
 # acast has each filename as media.mp3 TODO: use a local GUID as filename, which we allocate to each download URL (for now, if acast.com, delete after transcribing)
-rssList.feeds.append(RssFeed("Quality Blather","https://feeds.acast.com/public/shows/quality-blether", ["testing"], "https://shows.acast.com/quality-blether", [], "2025 01 01 00:00:01 UTC"))
-rssList.feeds.append(RssFeed("Tech and Test","https://feeds.buzzsprout.com/2313874.rss", ["testing"], "https://www.techandtest.co.uk/", ["https://www.youtube.com/@TechandTestPodcast","https://www.linkedin.com/company/tech-and-test-podcast/","https://www.linkedin.com/in/peterintest/",], "2025 01 01 00:00:01 UTC"))
-
-rssList.feeds.append(RssFeed("Quality Talks","https://anchor.fm/s/f6e76df4/podcast/rss", ["testing"], "https://qualitytalks.co.uk/podcast", ["https://www.youtube.com/@QualityTalksPodcast"], "2025 04 01 00:00:01 UTC"))
-
-rssList.feeds.append(RssFeed("Saucelabs Test Case Scenario","https://feeds.buzzsprout.com/2129346.rss", ["testing"], "https://www.youtube.com/@SauceLabs_Official/podcasts", [], "2025 04 01 00:00:01 UTC"))
-
+rssList.feeds.append(RssFeed("Tech and Test","https://feeds.buzzsprout.com/2313874.rss", ["testing"], "https://www.techandtest.co.uk/", ["https://www.youtube.com/@TechandTestPodcast","https://www.linkedin.com/company/tech-and-test-podcast/","https://www.linkedin.com/in/peterintest/",], "2025 01 01 00:00:01 UTC", "Tech and Test - hosted by Peter Johnson. Show notes has a summary of episode and resource links."))
+rssList.feeds.append(RssFeed("Test Guild", "https://testtalks.libsyn.com/rss", ["testing"], "https://testguild.com/", ["https://testguild.com/podcasts/automation/", "https://www.youtube.com/playlist?list=PL9AgRtJkydU1jqvx46esyr56BXtm1QEds", "https://www.youtube.com/@JoeColantonio"], "2025 06 01 00:00:01 UTC", "Test Guild - hosted by Joe Colantonio has main topic focus on Testing or Automating. Each episode has a different guest. Show notes have comprehensive links and usually a full transcript. Released as audio and video."))
+rssList.feeds.append(RssFeed("Test Guild Devops Toolchain Podcast","https://testguildperf.libsyn.com/rss", ["testing"], "https://testguild.com/podcasts/performance/", ["https://testguild.com/podcasts/performance/", "https://www.youtube.com/playlist?list=PL9AgRtJkydU3pQfcrQmDrGMbx3aNMnLnW"], "2025 06 01 00:00:01 UTC", "Test Guild Devops Toolchain Podcast - hosted by Joe Colantonio has a Dev Ops and Cloud focus. Each episode has a different guest. Show notes have comprehensive links and usually a full transcript. Released as audio and video."))
+rssList.feeds.append(RssFeed("Test Guild News Show","https://testguildnews.libsyn.com/rss", ["testing"], "https://testguild.com/podcasts/news/", ["https://testguild.com/podcasts/news/", "https://www.youtube.com/playlist?list=PL9AgRtJkydU1WSjOuUkOeRFTDN5dPyL6u"], "2025 06 01 00:00:01 UTC", "Test Guild News Show hosted by Joe Colantonio has a round up of Software Testing Tool news and updates. Released as audio and video. Show notes have links to source of each news update."))
+# Not updated since 2021
+#rssList.feeds.append(RssFeed("Test Guild Security Testing Podcast","https://testguildsecure.libsyn.com/rss", ["testing"], "https://www.youtube.com/playlist?list=PL9AgRtJkydU3JzSZcwWxMwrrzg9SSGWwH", ["https://www.youtube.com/playlist?list=PL9AgRtJkydU3JzSZcwWxMwrrzg9SSGWwH"], "2025 06 01 00:00:01 UTC"))
+rssList.feeds.append(RssFeed("Test Guild ZapTalk Podcast","https://feeds.buzzsprout.com/2426420.rss", ["testing"], "https://testguild.com/podcasts/zaptalk/", ["https://www.youtube.com/playlist?list=PL9AgRtJkydU1DWqrt1ilthObjql7zvPZ5"], "2025 04 01 00:00:01 UTC", "Test Guild ZapTalk - ZAPTEST sponsored podcast hosted by Joe Colantonio and Alex Zap. Often with a guest. Released as audio and video."))
+rssList.feeds.append(RssFeed("Test and Code","https://feeds.transistor.fm/test-and-code", ["testing"], "https://testandcode.com/", ["https://testandcode.com/archive"], "2025 04 01 00:00:01 UTC", "Test and Code -  host Brian Okken. Mix of Python Automation and guest episodes. Official show notes have an overview and a transcript."))
+rssList.feeds.append(RssFeed("The Engineering Quality Podcast", "https://anchor.fm/s/f6a276e0/podcast/rss", ["testing"], "https://www.engineeringqualitypodcast.com/", ["https://music.youtube.com/playlist?list=PLqUuvcBX10HyISlL5fhvGJosizW8PD9rV"], "2025 06 01 00:00:01 UTC", "The Engineering Quality Podcast - hosted by Alessandra Moreira, Royalee Martin, and Veronika Pliusnina. Testing focused panel discussions."))
+rssList.feeds.append(RssFeed("The EvilTester Show", "https://feed.pod.co/the-evil-tester-show", ["testing"], "https://eviltester.com/show", ["https://eviltester.com"],"2020 01 01 00:00:01 UTC", "The Evil Tester Show - hosted by Alan Richardson. Occasional guest episodes. Show notes have comprehensive descriptions and resource links. Released as audio and video."))
+rssList.feeds.append(RssFeed("The Testing Peers", "https://feeds.buzzsprout.com/1078751.rss", ["testing"], "https://testingpeers.com/", ["https://www.youtube.com/playlist?list=PLgToaFvlUC7mruBdL9eQDS3WFcpg9ooeI"], "2025 06 01 00:00:01 UTC", "The Testing Peers - panel discussions about testing. Usually Chris Armstrong, Simon Prior, Russell Craxford and David Maynard, with occasional special guests. Show notes on the website have an episode description and resource links."))
+rssList.feeds.append(RssFeed("The Testing Show", "https://thetestingshow.libsyn.com/rss", ["testing"], "https://www.qualitestgroup.com/insights/podcasts/", [], "2025 06 01 00:00:01 UTC", "The Testing Show - Qualitest panel discussions with guests. Main hosts Matthew Heusser and Michael Larsen. Official show notes have a short summary but the web page for each episode has a transcript."))
+rssList.feeds.append(RssFeed("The Vernon Richard Show", "https://feeds.transistor.fm/the-vernon-richard-show", ["testing"], "https://thevernonrichardshow.com/", ["https://www.youtube.com/@TheVernonRichardShow"], "2025 06 01 00:00:01 UTC", "The Vernon Richard Show - hosted by Vernon Richards and Richard Bradshaw. Usually a Testing themed discussion between Vernon and Richard. Official show notes have summary description, timestamped chapter headings, resource links. Show notes on the website sometimes have a full transcript. Released as audio and video."))
 
 # practitest The Test Management Mindset seem to be audio generated by NotebookLM so will not include
 # https://www.youtube.com/playlist?list=PLg74w4qP0mfF27a5pGDgGf691jrRlfMzc

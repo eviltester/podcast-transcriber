@@ -5,6 +5,30 @@
 <ul><li><a href="/podcasts/{{podcast_path}}">episodes list</a></li></ul>
 
 <h1>Podcast: {{ episode.podcastName }}</h1>
+
+<!-- Repeated from podcast.html -->
+<ul>
+    {% for category in feed.categories %}
+    <li>{{ category }}</li>
+    {% endfor %}
+</ul>
+
+<div>
+    {{ feed.description}}
+</div>
+
+<ul>
+    <li><a href="{{feed.homeUrl}}" target="_blank">{{feed.homeUrl}}</a></li>
+    <li><a href="{{feed.feed_rss_url}}" target="_blank">{{feed.feed_rss_url}}</a></li>
+    {% for href in feed.hrefs %}
+    <li><a href="{{href}}" target="_blank">{{href}}</a></li>
+    {% endfor %}
+</ul>
+
+<hr/>
+<!-- Repeated from podcast.html -->
+
+
 <h2>Episode: {{ episode.title }}</h2>
 
 <img style="max-width: 25%; height: auto; " src="{{episode.imageUrl}}"/>

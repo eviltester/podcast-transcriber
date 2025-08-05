@@ -72,6 +72,15 @@ class RssList:
                     return podcast
         return None
 
+    def get_category_names(self):
+        categories_set = set([])
+        if self.feeds is not None:
+            for podcast in self.feeds:
+                for a_category in podcast.categories:
+                    categories_set.add(a_category)
+
+        return sorted(list(categories_set))
+
 class RssListReader:
     def __init__(self, filepath):
         self.filepath = filepath
@@ -86,7 +95,7 @@ class RssListReader:
 
 
 class RssFeed:
-    def __init__(self, feedname, feed_rss_url, categories=None, homeUrl="", hrefs=None, earliestAutoDownloadDate=None):
+    def __init__(self, feedname, feed_rss_url, categories=None, homeUrl="", hrefs=None, earliestAutoDownloadDate=None, description=""):
         self.feedname =  normalize('NFD', feedname).encode('ascii','ignore').decode('utf-8')
         self.feed_rss_url = feed_rss_url
         self.parsed_feed = None
@@ -108,6 +117,7 @@ class RssFeed:
         self.new_urls = set()
         self.cache_path = ""
         self.url_safe_feedname = filenameify(feedname)
+        self.description = description
 
     def add_to_seen_cache(self, anItem):
         if(anItem.download_url in self.seen_urls):

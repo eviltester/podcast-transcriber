@@ -70,13 +70,13 @@ def post_process_all():
     summarize_processor = SummarizeQueueProcessor(summarize_queue, rssList.output_path, rssList.feeds)
     summarize_processor.summarize_all()
 
-    # TODO: auto build the summary pdfs by category and date range config
+    # TODO: auto build the summary pdfs by category and date range config supplied in a specific API call from UI
     report_defns = [
-        ReportTimeSpanDefn("output-reports/2025-07-july", "2025-07-01 00:00:01 UTC", "2025-07-31 23:59:59 UTC"),
-        ReportTimeSpanDefn("output-reports/2025-07-july/july-01-07", "2025-07-01 00:00:01 UTC","2025-07-07 23:59:59 UTC"),
-        ReportTimeSpanDefn("output-reports/2025-07-july/july-08-15", "2025-07-08 00:00:01 UTC","2025-07-15 23:59:59 UTC"),
-        ReportTimeSpanDefn("output-reports/2025-07-july/july-16-23", "2025-07-16 00:00:01 UTC","2025-07-23 23:59:59 UTC"),
-        ReportTimeSpanDefn("output-reports/2025-07-july/july-24-31", "2025-07-24 00:00:01 UTC","2025-07-31 23:59:59 UTC")
+        ReportTimeSpanDefn("output-reports/2025-08-august", "2025-08-01 00:00:01 UTC", "2025-08-31 23:59:59 UTC"),
+        ReportTimeSpanDefn("output-reports/2025-08-august/august-01-07", "2025-08-01 00:00:01 UTC","2025-08-07 23:59:59 UTC"),
+        ReportTimeSpanDefn("output-reports/2025-08-august/august-08-15", "2025-08-08 00:00:01 UTC","2025-08-15 23:59:59 UTC"),
+        ReportTimeSpanDefn("output-reports/2025-08-august/august-16-23", "2025-08-16 00:00:01 UTC","2025-08-23 23:59:59 UTC"),
+        ReportTimeSpanDefn("output-reports/2025-08-august/august-24-31", "2025-08-24 00:00:01 UTC","2025-08-31 23:59:59 UTC")
     ]
 
     for a_report_timespan in report_defns:

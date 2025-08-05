@@ -2,12 +2,10 @@ import fnmatch
 import os
 import io
 from ollama import generate
-from pathlib import Path
-from flask import Blueprint, request, render_template_string, render_template
+from flask import Blueprint, request, render_template
 
 from downloads import filenameify
-from podcast_episode import load_the_podcast_episode_data_from_file, load_the_podcast_episode_data
-from rss import RssFeed
+from podcast_episode import load_the_podcast_episode_data
 from markdown_it import MarkdownIt
 
 from summarization import SummarizeQueue
@@ -180,9 +178,42 @@ def post_process_with_ollama():
 
 @html_bp.route('/podcasts', methods=['GET'])
 def get_podcasts():
-    feeds = get_feeds_list()
-    return render_template('podcasts.html', feeds=feeds)
+    categories = []
+    if not rss_list is None:
+        categories = rss_list.get_category_names()
 
+    feeds = get_feeds_list()
+    return render_template('podcasts.html', feeds=feeds, categories = categories)
+
+
+def feeds_list_as_markdown(feedslist):
+    md = ""
+    for a_feed in feedslist:
+        md += f"- {a_feed.feedname}\n"
+        md += f"    - [{a_feed.homeUrl}]({a_feed.homeUrl})\n"
+        md += f"    - {a_feed.description}\n"
+    return md
+
+@html_bp.route('/category/<category_name>', methods=['GET'])
+def get_category_podcasts(category_name):
+    categories = []
+    if not rss_list is None:
+        categories = rss_list.get_category_names()
+
+    feeds = get_feeds_list()
+    filtered_feeds = list(filter(lambda feed: category_name in feed.categories, feeds))
+
+    pres = []
+    # output markdown to log
+    pres.append(feeds_list_as_markdown(filtered_feeds))
+
+    names = ""
+    for a_feed in filtered_feeds:
+        names += f"- {a_feed.feedname}\n"
+
+    pres.append(names)
+
+    return render_template('podcasts.html', feeds=filtered_feeds, categories = categories, category_name = category_name.capitalize(), pres = pres)
 
 def get_episode_list_html(episodes, include_podcast_name):
     html = "<ul>"
@@ -200,10 +231,10 @@ def get_episode_list_html(episodes, include_podcast_name):
 
 @html_bp.route('/podcasts/<name>', methods=['GET'])
 def get_podcast(name):
+
     feed = None
-    for feed in get_feeds_list():
-        if feed.url_safe_feedname == name:
-            break
+    if not rss_list is None:
+        feed = rss_list.get_podcast_details(name)
 
     message_html = ""
 
@@ -228,6 +259,10 @@ def get_podcast(name):
 
 @html_bp.route('/episode/<podcastname>/<episodetitle>', methods=['GET'])
 def get_episode(podcastname, episodetitle):
+
+    feed = None
+    if not rss_list is None:
+        feed = rss_list.get_podcast_details(podcastname)
 
     an_episode = load_the_podcast_episode_data(podcasts_path, podcastname, episodetitle)
 
@@ -258,5 +293,6 @@ def get_episode(podcastname, episodetitle):
         summary_html=summary_html,
         transcript_html=transcript_html,
         podcast_path= podcastname,
-        episode_path = episodetitle
+        episode_path = episodetitle,
+        feed = feed
     )

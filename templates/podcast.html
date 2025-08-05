@@ -15,6 +15,18 @@
     {% endfor %}
 </ul>
 
+<div>
+    {{ feed.description}}
+</div>
+
+<ul>
+    <li><a href="{{feed.homeUrl}}" target="_blank">{{feed.homeUrl}}</a></li>
+    <li><a href="{{feed.feed_rss_url}}" target="_blank">{{feed.feed_rss_url}}</a></li>
+    {% for href in feed.hrefs %}
+    <li><a href="{{href}}" target="_blank">{{href}}</a></li>
+    {% endfor %}
+</ul>
+
 <hr/>
 
 <div>
