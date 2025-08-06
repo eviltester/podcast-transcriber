@@ -6,27 +6,8 @@
 
 <script>
     document.getElementById('doAllTheWork').addEventListener('click', function() {
-
         var button = this;
-        button.disabled = true;
-
-        fetch('/api/processall', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: ""
-        })
-        .then(response => response.json())
-        .then(data => {
-            alert('Success: ' + JSON.stringify(data));
-        })
-        .catch((error) => {
-            alert('Error: ' + error);
-        })
-        .finally(() => {
-            button.disabled = false;
-        });
+        postCallFromButton(button, '/api/processall', "");
     });
 </script>
 

@@ -6,27 +6,10 @@
 
 <h1>Podcast: {{ episode.podcastName }}</h1>
 
-<!-- Repeated from podcast.html -->
-<ul>
-    {% for category in feed.categories %}
-    <li>{{ category }}</li>
-    {% endfor %}
-</ul>
-
-<div>
-    {{ feed.description}}
-</div>
-
-<ul>
-    <li><a href="{{feed.homeUrl}}" target="_blank">{{feed.homeUrl}}</a></li>
-    <li><a href="{{feed.feed_rss_url}}" target="_blank">{{feed.feed_rss_url}}</a></li>
-    {% for href in feed.hrefs %}
-    <li><a href="{{href}}" target="_blank">{{href}}</a></li>
-    {% endfor %}
-</ul>
+{% include 'categoriesnav.html' %}
+{% include 'feed-details.html' %}
 
 <hr/>
-<!-- Repeated from podcast.html -->
 
 
 <h2>Episode: {{ episode.title }}</h2>
@@ -57,51 +40,13 @@
 
 <script>
     document.getElementById('regenerate').addEventListener('click', function() {
-
         var button = this;
-        button.disabled = true;
-
-        fetch('/api/regeneratesummary/{{podcast_path}}/{{episode_path}}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: ""
-        })
-        .then(response => response.json())
-        .then(data => {
-            alert('Success: ' + JSON.stringify(data));
-        })
-        .catch((error) => {
-            alert('Error: ' + error);
-        })
-        .finally(() => {
-            button.disabled = false;
-        });
+        postCallFromButton(button, '/api/regeneratesummary/{{podcast_path}}/{{episode_path}}', "");
     });
 
     document.getElementById('regeneratemarkdown').addEventListener('click', function() {
-
         var button = this;
-        button.disabled = true;
-
-        fetch('/api/regeneratemarkdownsummary/{{podcast_path}}/{{episode_path}}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: ""
-        })
-        .then(response => response.json())
-        .then(data => {
-            alert('Success: ' + JSON.stringify(data));
-        })
-        .catch((error) => {
-            alert('Error: ' + error);
-        })
-        .finally(() => {
-            button.disabled = false;
-        });
+        postCallFromButton(button, '/api/regeneratemarkdownsummary/{{podcast_path}}/{{episode_path}}', "");
     });
 </script>
 

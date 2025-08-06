@@ -150,6 +150,9 @@ def summarize(filecontents):
     briefingSummaryPrompt = "Create a briefing document from this text. Emphasize the important key points, particularly points that have used numbers in them. Create some introductory paragraphs and Use bullets and headings. Here is the text to create briefing document from:\n\n"
     generateFromPrompt(responses, intermediate_text, "Briefing", briefingSummaryPrompt, main_summary_model)
 
+    conciseSummaryPrompt = "Create a one paragraph summary of this podcast transcription. Only summarise information about the content of the podcast. Do not include information about the podcast guest, host, title or calls to action\n\n"
+    generateFromPrompt(responses, intermediate_text, "Concise Summary", conciseSummaryPrompt, main_summary_model)
+
     generalSummaryPrompt = "Summarize the main topics discussed in the following text. Use bullets and headings. Here is the text to summarize:\n\n"
     generateFromPrompt(responses, intermediate_text, "Main Topics", generalSummaryPrompt, "qwen3:8b")
 
@@ -193,7 +196,7 @@ def summarizeTranscriptFile(fileNameToRead):
     # printResponses(responses)
     outputPath = os.path.dirname(fileNameToRead)
     fileToOutput = fileNameToRead + ".notes.md"
-    outputResponsesToFile(responses, fileToOutput, [], ["Intermediate","Main Topics"])
-    outputResponsesToFile(responses, os.path.join(outputPath,"summary.md"), [], ["Intermediate","Main Topics"])
+    outputResponsesToFile(responses, fileToOutput, [], ["Intermediate","Main Topics","Concise Summary"])
+    outputResponsesToFile(responses, os.path.join(outputPath,"summary.md"), [], ["Intermediate","Main Topics", "Concise Summary"])
     for a_response in responses:
         outputResponsesToFile(responses, os.path.join(outputPath,filenameify(a_response.title.lower()) + "-summary.md"), [a_response.title], [])
