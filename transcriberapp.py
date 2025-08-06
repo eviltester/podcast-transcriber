@@ -122,7 +122,7 @@ rssList.feeds.append(RssFeed("MLOps.community","https://anchor.fm/s/174cb1b8/pod
 # Business
 
 rssList.feeds.append(RssFeed("Technovation","https://www.metisstrategy.com/interview/feed/podcast/",["business"], "https://www.metisstrategy.com/podcast-overview/", ["https://www.youtube.com/playlist?list=PLo67eg0gOxoDzmwXgoITSDVSgMoJxkXH3"], "2025 01 01 00:00:01 UTC"))
-rssList.feeds.append(RssFeed("Build Your Edge","https://api.riverside.fm/hosting/kootpfl4.rss",["business"], "https://open.spotify.com/show/2BQTeyVEumrbVST6s9Alkh", [], "2025 08 01 00:00:01 UTC"))
+rssList.feeds.append(RssFeed("Build Your Edge","https://api.riverside.fm/hosting/kootpfl4.rss",["business"], "https://www.buildyouredge.org", ["https://www.youtube.com/watch?v=9PFufge1Xvg","https://buildyouredge.substack.com/"], "2025 08 01 00:00:01 UTC", "Build Your Edge is a motivational business podcast hosted by Jeremy Burns. Released as audio and video. Main site page for episode has downloadable resources."))
 
 # Marketing
 rssList.feeds.append(RssFeed("Fastlane Founders","https://fastlanefounders.com/feed/podcast/",["marketing"], "https://fastlanefounders.com/", [], "2025 01 01 00:00:01 UTC"))

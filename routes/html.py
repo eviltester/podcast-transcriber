@@ -201,17 +201,19 @@ def get_category_podcasts(category_name):
         categories = rss_list.get_category_names()
 
     feeds = get_feeds_list()
-    filtered_feeds = list(filter(lambda feed: category_name in feed.categories, feeds))
+    filtered_feeds = list(filter(lambda feed: category_name.lower() in feed.categories, feeds))
 
     pres = []
     # output markdown to log
-    pres.append(feeds_list_as_markdown(filtered_feeds))
+    if not request.args.get('markdown') is None:
+        pres.append(feeds_list_as_markdown(filtered_feeds))
 
     names = ""
     for a_feed in filtered_feeds:
         names += f"- {a_feed.feedname}\n"
 
-    pres.append(names)
+    if not request.args.get('markdown') is None:
+        pres.append(names)
 
     return render_template('podcasts.html', feeds=filtered_feeds, categories = categories, category_name = category_name.capitalize(), pres = pres)
 
