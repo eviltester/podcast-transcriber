@@ -29,6 +29,8 @@ class PandocReportGenerator:
 
     def getPodcastMetaData(self, rootdir):
         # load all metadata
+        # TODO: create a dot_line_progress_printer that maintains its own dot_count
+        dot_count = 0
         for subdir, dirs, files in os.walk(rootdir):
             for file in files:
                 #print os.path.join(subdir, file)
@@ -40,7 +42,11 @@ class PandocReportGenerator:
                     episodename = episode.title
                     published = episode.published
                     podcastInfo = PodcastInfo(podcastName, episodename, published, os.path.dirname(filepath))
-                    print(".", end='')
+                    if dot_count % 25 == 0:
+                        print(".")
+                    else:
+                        print(".", end='')
+                    dot_count += 1
                     self.podcasts.append(podcastInfo)
 
 

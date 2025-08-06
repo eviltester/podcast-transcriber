@@ -161,6 +161,7 @@ class RssFeed:
         if(self.parsed_feed==None):
             print("feed not loaded")
 
+        dot_count = 0
         # base newness on "have I seen this download url" before?
         for item in self.parsed_feed.entries:
 
@@ -170,7 +171,11 @@ class RssFeed:
             seen_before = False
             for seen in self.seen_podcast_episodes:
                 if(seen.download_url == possibleNewEpisode.download_url):
-                    print(".", end='')
+                    if dot_count % 25 == 0:
+                        print(".")
+                    else:
+                        print(".", end='')
+                    dot_count += 1
                     #print("seen episode before " + item.title)
                     seen_before = True
                     break
