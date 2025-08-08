@@ -226,7 +226,10 @@ def get_episode_list_html(episodes, include_podcast_name):
         podcast_name = ""
         if include_podcast_name:
             podcast_name = value.podcastName + " - "
-        html += f"<li>{podcast_name} <a href='/episode/{key}'>{value.title}</a> - {value.published} ({value.duration})</li>"
+        html += f"<li>{podcast_name} <a href='/episode/{key}'>{value.title}</a> - {value.published} ({value.duration})"
+        if value.one_para_generated_summary != "":
+            html += f"<ul><li>{value.one_para_generated_summary}</li></ul>"
+        html += "</li>"
     html += "</ul>"
 
     return html

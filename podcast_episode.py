@@ -1,5 +1,6 @@
 # PodcastEpisode is a class that encompasses all the meta data for a podcast episode
 # mostly taken from the RSS feed in rss.py
+from markdown_it import MarkdownIt
 from unicodedata import normalize
 from dateutil.parser import parse
 import json
@@ -24,6 +25,7 @@ class PodcastEpisode:
         self.duration = duration
         self.author = normalize('NFD', author).encode('ascii','ignore').decode('utf-8')
         self.summary = normalize('NFD', summary).encode('ascii','ignore').decode('utf-8')
+        self.one_para_generated_summary = ""
 
         # links should be a dict of [name](url)
         self.links = links
@@ -79,7 +81,26 @@ def store_the_podcast_episode_data(outputFolder, episode):
 def load_the_podcast_episode_data(basefolder, podcastname, episodetitle):
     inputFileFolder = path.join(basefolder, filenameify(podcastname), filenameify(episodetitle))
     episodeDataFile = path.join(inputFileFolder, "episode.json")
-    return load_the_podcast_episode_data_from_file(episodeDataFile)
+    episode = load_the_podcast_episode_data_from_file(episodeDataFile)
+    if not episode is None:
+        episode.one_para_generated_summary = load_the_podcast_episode_summary(inputFileFolder)
+    return episode
+
+def load_the_podcast_episode_summary(episodeFolder, skip_titles=True):
+    aFilePath = path.join(episodeFolder, filenameify("Concise Summary " + "summary") + ".md")
+    if not path.exists(aFilePath):
+        #print("could not find summary data to load " + aFilePath)
+        return ""
+    else:
+        with open(aFilePath, 'r') as f:
+            summary = f.read()
+            if skip_titles:
+                wo_titles = ""
+                for summary_line in summary.splitlines(keepends=True):
+                    if not summary_line.startswith("#"):
+                        wo_titles += summary_line
+                summary = wo_titles
+            return summary
 
 def load_the_podcast_episode_data_from_file(aFilePath):
     if not path.exists(aFilePath):

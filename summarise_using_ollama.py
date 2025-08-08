@@ -144,13 +144,13 @@ def summarize(filecontents):
     #generalSummaryParaPrompt = "Summarize the main topics discussed in the following text as a short paragraph of writing:\n\n"
     #generateFromPrompt(responses, filecontents, "Main Summary", generalSummaryParaPrompt, "mistral")
 
-    overviewSummaryPrompt = "Create a short 2 or 3 paragraph summary of the following text.\n\n"
+    overviewSummaryPrompt = "Create a short 2 or 3 paragraph summary of the following text. Only summarise information about the content of the podcast. Do not include information about the podcast host, title, sponsor or calls to action.\n\n"
     generateFromPrompt(responses, intermediate_text, "Overview", overviewSummaryPrompt, main_summary_model)
 
     briefingSummaryPrompt = "Create a briefing document from this text. Emphasize the important key points, particularly points that have used numbers in them. Create some introductory paragraphs and Use bullets and headings. Here is the text to create briefing document from:\n\n"
     generateFromPrompt(responses, intermediate_text, "Briefing", briefingSummaryPrompt, main_summary_model)
 
-    conciseSummaryPrompt = "Create a one paragraph summary of this podcast transcription. Only summarise information about the content of the podcast. Do not include information about the podcast guest, host, title or calls to action\n\n"
+    conciseSummaryPrompt = "Create a one paragraph summary of this podcast transcription. Only summarise information about the content of the podcast. Do not include information about the podcast guest, host, title, sponsor or calls to action.\n\n"
     generateFromPrompt(responses, intermediate_text, "Concise Summary", conciseSummaryPrompt, main_summary_model)
 
     generalSummaryPrompt = "Summarize the main topics discussed in the following text. Use bullets and headings. Here is the text to summarize:\n\n"
