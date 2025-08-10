@@ -208,6 +208,10 @@ class RssFeed:
         if(hasattr(rssItem, "link")):
             show_notes_link = rssItem.link
 
+            if "youtube.com/watch" in rssItem.link:
+                # it is a youtube download
+                download_url = rssItem.link
+
         publishedDate = parse(rssItem.get("published",None))
 
         duration = rssItem.get("itunes_duration", "00:00:00")

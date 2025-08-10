@@ -56,20 +56,29 @@ def post_process_all():
         return jsonify({"message": "Rss List Not Configured"}), 428
 
     singleton_process_all_running = True
-    download_queue = DownloadQueue(rssList.download_csv_cache, rssList.downloaded_csv_cache)
 
-    # get the summarize queue
-    summarize_queue = SummarizeQueue(rssList.summarize_queue_csv_cache, rssList.summarized_csv_cache)
+    try:
+        download_queue = DownloadQueue(rssList.download_csv_cache, rssList.downloaded_csv_cache)
 
-    feed_scanner = RssFeedScanner(rssList.output_path, download_queue, rssList, rssList.download_path)
-    feed_scanner.scan_for_new_podcasts()
+        # get the summarize queue
+        summarize_queue = SummarizeQueue(rssList.summarize_queue_csv_cache, rssList.summarized_csv_cache)
 
-    download_queue_processor = DownloadAndTranscribeProcessor(download_queue, summarize_queue, rssList.download_path, rssList.output_path)
-    download_queue_processor.download_transcribe_and_queue_for_summarization()
+        feed_scanner = RssFeedScanner(rssList.output_path, download_queue, rssList, rssList.download_path)
+        feed_scanner.scan_for_new_podcasts()
 
-    summarize_processor = SummarizeQueueProcessor(summarize_queue, rssList.output_path, rssList.feeds)
-    summarize_processor.summarize_all()
+        download_queue_processor = DownloadAndTranscribeProcessor(download_queue, summarize_queue, rssList.download_path, rssList.output_path)
+        download_queue_processor.download_transcribe_and_queue_for_summarization()
 
+        summarize_processor = SummarizeQueueProcessor(summarize_queue, rssList.output_path, rssList.feeds)
+        summarize_processor.summarize_all()
+
+    finally:
+        singleton_process_all_running = False
+
+    return jsonify({"message": "Processed Everything"}), 200
+
+@api_bp.route('/generate-all-markdown-reports', methods=['POST'])
+def auto_gen_markdown_reports():
     # TODO: auto build the summary pdfs by category and date range config supplied in a specific API call from UI
     report_defns = [
         ReportTimeSpanDefn("output-reports/2025-08-august", "2025-08-01 00:00:01 UTC", "2025-08-31 23:59:59 UTC"),
@@ -97,6 +106,4 @@ def post_process_all():
         reporter.generate_reports_for(fromDate, toDate, "ai_dev", [], ["ai","development"], rssList.feeds)
         reporter.generate_reports_for(fromDate, toDate, "business_marketing", [], ["business","marketing"], rssList.feeds)
 
-    singleton_process_all_running = False
-
-    return jsonify({"message": "Processed Everything"}), 200
+    return jsonify({"message": "Reports Generated"}), 200

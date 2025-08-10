@@ -137,8 +137,9 @@ rssList.feeds.append(RssFeed("Goto tech","https://feeds.buzzsprout.com/1714721.r
 # https://www.youtube.com/@eviltester
 # could delegate to yt-dlp for the heavy lifting of downloading, converting to mp3, and then use normal process
 # or could delegate to MarkItDown and just get the markdown version of the YT video https://github.com/microsoft/markitdown
+# 20250810 - tried markitdown and it failed on mp3 and youtube
 
-#rssList.feeds.append(RssFeed("EvilTeser Videos - Youtube","https://www.youtube.com/feeds/videos.xml?channel_id=UCCAwIFH3FRVD9GBuVRW_mUw",["youtube"], "https://www.youtube.com/@eviltester", [], "2025 07 01 00:00:01 UTC"))
+#rssList.feeds.append(RssFeed("EvilTester Videos - Youtube","https://www.youtube.com/feeds/videos.xml?channel_id=UCCAwIFH3FRVD9GBuVRW_mUw",["youtube"], "https://www.youtube.com/@eviltester", [], "2025 07 01 00:00:01 UTC"))
 
 
 

@@ -30,6 +30,8 @@ class DownloadAndTranscribeProcessor:
             extension = ".mp3"
             if filename.endswith("-m4a"):
                 extension = ".m4a"
+            if "youtube.com" in parsed_url.hostname:
+                extension = ".m4a"
             download_as_filename = filenameify(next_download.podcast_name + "-" + next_download.episode_title) + extension
             inputAudioFile = download_if_not_exists(next_download.url, self.download_path, download_as_filename)
 

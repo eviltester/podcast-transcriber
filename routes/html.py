@@ -41,7 +41,7 @@ def set_podcast_folders_path(a_path):
 def get_feeds_list():
     return sorted(feeds,key=lambda feed: feed.feedname)
 
-def get_recent_episodes():
+def get_recent_episodes(for_category=None):
 
     recent_episodes = {}
 
@@ -50,14 +50,24 @@ def get_recent_episodes():
 
     # this approach doesn't work if we have just added a new podcast, we should really scan all episodes and get the most recent
     done_count = len(summarize_queue.done)
-    recent_limit = done_count-30
-    while done_count > recent_limit:
+    # show max 30 most recent
+    recent_limit = 30
+    while recent_limit > 0 and done_count>=0:
 
         done_count = done_count-1
         a_recent_episode = summarize_queue.done[done_count]
         an_episode = load_the_podcast_episode_data(podcasts_path, a_recent_episode.podcast_name, a_recent_episode.episode_title)
-        if an_episode != None:
-            recent_episodes[filenameify(a_recent_episode.podcast_name) + "/" + filenameify(a_recent_episode.episode_title)] = an_episode
+        podcast_in_list = rss_list.get_podcast_details(a_recent_episode.podcast_name)
+        if an_episode is not None and podcast_in_list is not None:
+
+            include_podcast_episode = True
+
+            if for_category is not None and for_category not in podcast_in_list.categories:
+                include_podcast_episode = False
+
+            if include_podcast_episode:
+                recent_episodes[filenameify(a_recent_episode.podcast_name) + "/" + filenameify(a_recent_episode.episode_title)] = an_episode
+                recent_limit = recent_limit-1
 
     return recent_episodes
 
@@ -215,7 +225,17 @@ def get_category_podcasts(category_name):
     if not request.args.get('markdown') is None:
         pres.append(names)
 
-    return render_template('podcasts.html', feeds=filtered_feeds, categories = categories, category_name = category_name.capitalize(), pres = pres)
+    recent_episodes = get_recent_episodes(for_category=category_name)
+    recent_episodes_html = get_episode_list_html(recent_episodes, True)
+
+    return render_template(
+        'podcasts.html',
+        feeds=filtered_feeds,
+        categories = categories,
+        category_name = category_name.capitalize(),
+        pres = pres,
+        recent_episodes_html = recent_episodes_html
+    )
 
 def get_episode_list_html(episodes, include_podcast_name):
     html = "<ul>"

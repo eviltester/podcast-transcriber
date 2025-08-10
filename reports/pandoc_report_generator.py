@@ -87,6 +87,9 @@ class PandocReportGenerator:
                         if aCategory in podcast_categories_to_include:
                             category_include = True
                     includeEpisode = category_include
+                else:
+                    # podcast is not defined, do not include
+                    includeEpisode = False
 
         return includeEpisode
 
@@ -129,15 +132,17 @@ class PandocReportGenerator:
                     # todo: if we have not created a transcript then create it now
                     # todo: if main summary does not exist then create it now
                     # todo: really need to normalize earlier for all text
-                    with open(os.path.join(inputPath,f"summary-{nameAsDir}.md"),"r", errors="ignore") as summary:
-                        summarymd = summary.read()
-                    summarymd = normalize('NFD', summarymd).encode('ascii','ignore').decode('utf-8')
+                    filenamepath = os.path.join(inputPath,f"summary-{nameAsDir}.md")
+                    if os.path.exists(filenamepath):
+                        with open(filenamepath,"r", errors="ignore") as summary:
+                            summarymd = summary.read()
+                        summarymd = normalize('NFD', summarymd).encode('ascii','ignore').decode('utf-8')
 
-                    # we had issues where AI generated summary might have "---" or "--- " without 2 newline break
-                    # which caused pandoc to treat it as yaml markdown
-                    summarymd = re.sub(r"^---[ ]*\n([^\n])",r"---\n\n\1", summarymd, flags=re.M)
+                        # we had issues where AI generated summary might have "---" or "--- " without 2 newline break
+                        # which caused pandoc to treat it as yaml markdown
+                        summarymd = re.sub(r"^---[ ]*\n([^\n])",r"---\n\n\1", summarymd, flags=re.M)
 
-                    f.write(f"\n\n{summarymd}\n\n---\n\n")
+                        f.write(f"\n\n{summarymd}\n\n---\n\n")
 
         # call pandocifier to generate pdf
         # pandoc summary-details.md -f markdown -s -o summary-report.pdf --toc --toc-depth=4

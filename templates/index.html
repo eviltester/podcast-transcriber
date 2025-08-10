@@ -2,12 +2,17 @@
 
 {% block content %}
 
-<button id="doAllTheWork">Process Everything</button>
+<button id="doAllTheWork">Process New Podcasts</button><br/>
+<button id="markdownReportGeneration">Generate Markdown Reports</button>
 
 <script>
     document.getElementById('doAllTheWork').addEventListener('click', function() {
         var button = this;
         postCallFromButton(button, '/api/processall', "");
+    });
+        document.getElementById('markdownReportGeneration').addEventListener('click', function() {
+        var button = this;
+        postCallFromButton(button, '/api/generate-all-markdown-reports', "");
     });
 </script>
 
