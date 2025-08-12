@@ -117,12 +117,21 @@ rssList.feeds.append(RssFeed("The Vernon Richard Show", "https://feeds.transisto
 # https://www.youtube.com/playlist?list=PLg74w4qP0mfF27a5pGDgGf691jrRlfMzc
 # https://open.spotify.com/show/7JKJZVMxo6xdYeRm4RCgod?si=c7f43a090849403e&nd=1&dlsi=471dd808fe594c78
 
+# Development
+
+#
+rssList.feeds.append(RssFeed("Podcasts by InfoQ", "https://feeds.soundcloud.com/users/soundcloud:users:215740450/sounds.rss", ["development"], "https://www.infoq.com/podcasts/", ["https://www.youtube.com/playlist?list=PLndbWGuLoHeZLVC9vl0LzLvMWHzpzIpir"], "2025 06 01 00:00:01 UTC", "Guest focussed episodes on general development topics. Show notes for each episode have summaries and transcripts. Released as audio and video."))
+
+rssList.feeds.append(RssFeed("Engineering Culture by InfoQ", "https://feeds.soundcloud.com/users/soundcloud:users:258266127/sounds.rss", ["development"], "https://www.infoq.com/podcasts/", ["https://www.youtube.com/playlist?list=PLndbWGuLoHeYaFgbuLnvO5Qab2pFBaSWX"], "2025 06 01 00:00:01 UTC", "Guest focussed episodes on general development topics. Show notes for each episode have summaries and transcripts. Released as audio and video."))
+
 # AI
 rssList.feeds.append(RssFeed("MLOps.community","https://anchor.fm/s/174cb1b8/podcast/rss",["ai"], "https://mlops.community/", ["https://www.youtube.com/@MLOps"], "2025 06 01 00:00:01 UTC"))
 # Business
 
 rssList.feeds.append(RssFeed("Technovation","https://www.metisstrategy.com/interview/feed/podcast/",["business"], "https://www.metisstrategy.com/podcast-overview/", ["https://www.youtube.com/playlist?list=PLo67eg0gOxoDzmwXgoITSDVSgMoJxkXH3"], "2025 01 01 00:00:01 UTC"))
-rssList.feeds.append(RssFeed("Build Your Edge","https://api.riverside.fm/hosting/kootpfl4.rss",["business"], "https://www.buildyouredge.org", ["https://www.youtube.com/watch?v=9PFufge1Xvg","https://buildyouredge.substack.com/"], "2025 08 01 00:00:01 UTC", "Build Your Edge is a motivational business podcast hosted by Jeremy Burns. Released as audio and video. Main site page for episode has downloadable resources."))
+rssList.feeds.append(RssFeed("Build Your Edge","https://api.riverside.fm/hosting/kootpfl4.rss",["business"], "https://www.buildyouredge.org", ["https://www.youtube.com/watch?v=9PFufge1Xvg","https://buildyouredge.substack.com/", "https://www.buildyouredge.org/downloads"], "2025 08 01 00:00:01 UTC", "Build Your Edge is a motivational business podcast hosted by Jeremy Burns. Released as audio and video. Main site page for episode has downloadable resources."))
+# rssList.feeds.append(RssFeed("The 505 Podcast","https://feeds.redcircle.com/7e1027d2-d8b5-4f66-882b-03422b443282",["business"], "https://www.youtube.com/@the505podcast", [], "2025 05 01 00:00:01 UTC", "A strategy modern business podcast. Released as audio and video."))
+
 
 # Marketing
 rssList.feeds.append(RssFeed("Fastlane Founders","https://fastlanefounders.com/feed/podcast/",["marketing"], "https://fastlanefounders.com/", [], "2025 01 01 00:00:01 UTC"))

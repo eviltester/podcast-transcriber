@@ -37,7 +37,7 @@ def generateFromModel(modelname, title, prompt):
 
 # any models used should first have been pulled into ollama - `ollama pull llama3.1`
 
-def generateFromPrompt(responsesArray, filecontents, title, prompt, modelname = "qwen3:8b"):
+def generateFromPrompt(filecontents, title, prompt, modelname = "qwen3:8b"):
     # https://ollama.com/library/dolphin3
     # creates bullets like mistral but doesn't hallucinate as much - might be best
     prompt_to_use = prompt
@@ -54,7 +54,7 @@ def generateFromPrompt(responsesArray, filecontents, title, prompt, modelname = 
             response_to_edit = response_to_edit[0 : start_thinking] + response_to_edit[(end_thinking+len("</think>")) : len(response_to_edit)]
         response.response = response_to_edit
 
-    responsesArray.append(response)
+    return response
 
 
 def chunk_filecontents(text_to_chunk, chunksize_chars, overrun_terminator):
@@ -110,7 +110,9 @@ def chunk_filecontents(text_to_chunk, chunksize_chars, overrun_terminator):
 
 
 
-
+def get_overview_response(text, model):
+    overviewSummaryPrompt = "Create a short 2 or 3 paragraph summary of the following text. Only summarise information about the content of the podcast. Do not include information about the podcast host, title, sponsor or calls to action.\n\n"
+    return generateFromPrompt(text, "Overview", overviewSummaryPrompt, model)
 
 
 def summarize(filecontents):
@@ -131,7 +133,7 @@ def summarize(filecontents):
     intermediateSummaryPrompt = "Summarize the main topics discussed in the following text. Use bullets and headings. Here is the text to summarize:\n\n"
     for a_section in doc_sections:
         print("Summarizing chunk...")
-        generateFromPrompt(summary_responses, a_section, "Intermediate", intermediateSummaryPrompt, intermediate_response_model)
+        summary_responses.append(generateFromPrompt(a_section, "Intermediate", intermediateSummaryPrompt, intermediate_response_model))
 
     intermediate_text = ""
     for a_response in summary_responses:
@@ -140,25 +142,39 @@ def summarize(filecontents):
     # create single response for the intermediate responses
     responses.append(Response(intermediate_response_model, "Intermediate", intermediateSummaryPrompt, intermediate_text))
 
+
+    # for each doc section create a single paragraph summary of it
+    para_responses = []
+    concise_para_prompt = "Create a one paragraph summary of this podcast transcription. Only summarise information about the content of the podcast. Do not include information about the podcast guest, host, title, sponsor or calls to action.\n\n"
+    para_responses.append(generateFromPrompt(intermediate_text, "Paras", concise_para_prompt, main_summary_model))
+
+    paras_text = ""
+    for a_response in para_responses:
+        paras_text += a_response.response + "\n\n"
+
+    # create single response for the intermediate paras responses
+    responses.append(Response(intermediate_response_model, "Paras", intermediateSummaryPrompt, intermediate_text))
+
     # getting a paragraph was unreliable, just use the text provided in meta data
     #generalSummaryParaPrompt = "Summarize the main topics discussed in the following text as a short paragraph of writing:\n\n"
     #generateFromPrompt(responses, filecontents, "Main Summary", generalSummaryParaPrompt, "mistral")
 
-    overviewSummaryPrompt = "Create a short 2 or 3 paragraph summary of the following text. Only summarise information about the content of the podcast. Do not include information about the podcast host, title, sponsor or calls to action.\n\n"
-    generateFromPrompt(responses, intermediate_text, "Overview", overviewSummaryPrompt, main_summary_model)
+    # overviewSummaryPrompt = "Create a short 2 or 3 paragraph summary of the following text. Only summarise information about the content of the podcast. Do not include information about the podcast host, title, sponsor or calls to action.\n\n"
+    # responses.append(generateFromPrompt(intermediate_text, "Overview", overviewSummaryPrompt, main_summary_model))
+    responses.append(get_overview_response(paras_text, main_summary_model))
 
     briefingSummaryPrompt = "Create a briefing document from this text. Emphasize the important key points, particularly points that have used numbers in them. Create some introductory paragraphs and Use bullets and headings. Do not add any details about the author of the briefing document, or date it was created, or department creating it.  Here is the text to create briefing document from:\n\n"
-    generateFromPrompt(responses, intermediate_text, "Briefing", briefingSummaryPrompt, main_summary_model)
+    responses.append(generateFromPrompt(intermediate_text, "Briefing", briefingSummaryPrompt, main_summary_model))
 
     conciseSummaryPrompt = "Create a one paragraph summary of this podcast transcription. Only summarise information about the content of the podcast. Do not include information about the podcast guest, host, title, sponsor or calls to action.\n\n"
-    generateFromPrompt(responses, intermediate_text, "Concise Summary", conciseSummaryPrompt, main_summary_model)
+    responses.append(generateFromPrompt(paras_text, "Concise Summary", conciseSummaryPrompt, main_summary_model))
 
     generalSummaryPrompt = "Summarize the main topics discussed in the following text. Use bullets and headings. Here is the text to summarize:\n\n"
-    generateFromPrompt(responses, intermediate_text, "Main Topics", generalSummaryPrompt, "qwen3:8b")
+    responses.append(generateFromPrompt(intermediate_text, "Main Topics", generalSummaryPrompt, "qwen3:8b"))
 
 
     keyinsightsprompt = "Use the following text and identify some of the key insights or takeaways presented in the text, and how might they be relevant or useful to readers. Here is the text "
-    generateFromPrompt(responses, intermediate_text, "Final Notes", keyinsightsprompt, "llama3.1")
+    responses.append(generateFromPrompt(intermediate_text, "Final Notes", keyinsightsprompt, "llama3.1"))
 
     return responses
 
@@ -196,7 +212,15 @@ def summarizeTranscriptFile(fileNameToRead):
     # printResponses(responses)
     outputPath = os.path.dirname(fileNameToRead)
     fileToOutput = fileNameToRead + ".notes.md"
-    outputResponsesToFile(responses, fileToOutput, [], ["Intermediate","Main Topics","Concise Summary"])
-    outputResponsesToFile(responses, os.path.join(outputPath,"summary.md"), [], ["Intermediate","Main Topics", "Concise Summary"])
+    outputResponsesToFile(responses, fileToOutput, [], ["Intermediate","Main Topics","Concise Summary" "Paras"])
+    outputResponsesToFile(responses, os.path.join(outputPath,"summary.md"), [], ["Intermediate","Main Topics", "Concise Summary", "Paras"])
     for a_response in responses:
         outputResponsesToFile(responses, os.path.join(outputPath,filenameify(a_response.title.lower()) + "-summary.md"), [a_response.title], [])
+
+def adhoc_summary(episode_path, summary_sections = ["overview"]):
+    # load the intermediate_summary - actually that can be too big, use the paras
+    file_contents = readFileContents(os.path.join(episode_path, "paras-summary.md"))
+    for section in summary_sections:
+        if section == "overview":
+            response = get_overview_response(file_contents, "qwen3:14b")
+            outputResponsesToFile([response], os.path.join(episode_path,filenameify(response.title.lower()) + "-summary.md"), [response.title], [])

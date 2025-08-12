@@ -2,6 +2,8 @@ import os.path
 
 from downloads import filenameify
 from podcast_episode import load_the_podcast_episode_data
+from summarise_using_ollama import readFileContents
+
 
 # for a given file
 # extract the folder
@@ -12,7 +14,27 @@ def generateMarkdownSummaryReport(outputPath, podcastName, episodeTitle, podcast
     podcastNameAsFile = filenameify(podcastName)
     titleAsFile = filenameify(episodeTitle)
 
+
     summaryFilePath = os.path.join(outputPath, podcastNameAsFile, titleAsFile, "summary.md")
+
+    # We should regenerate the summary from the output text here
+
+    overviewFilePath = os.path.join(outputPath, podcastNameAsFile, titleAsFile, "overview-summary.md")
+    briefingFilePath = os.path.join(outputPath, podcastNameAsFile, titleAsFile, "briefing-summary.md")
+    finalNotesFilePath = os.path.join(outputPath, podcastNameAsFile, titleAsFile, "final-notes-summary.md")
+    if os.path.exists(overviewFilePath) and os.path.exists(briefingFilePath) and os.path.exists(finalNotesFilePath):
+        overviewContents = readFileContents(overviewFilePath)
+        briefingContents = readFileContents(briefingFilePath)
+        finalNotesContents = readFileContents(finalNotesFilePath)
+
+        with open(summaryFilePath,"w") as file:
+            file.write("\n\n" +overviewContents + "\n\n")
+            file.write("\n\n" +briefingContents + "\n\n")
+            file.write("\n\n" +finalNotesContents + "\n\n")
+
+
+
+
     if not os.path.exists(summaryFilePath):
         # TODO: for backwards compatibility could look for aTranscriptFile.notes.md and copy to summary.md in folder then continue
         print(f"cannot generate report as summary.md does not exist for {outputPath}")
@@ -21,6 +43,8 @@ def generateMarkdownSummaryReport(outputPath, podcastName, episodeTitle, podcast
     summaryReportFileName = os.path.join(outputPath,podcastNameAsFile, titleAsFile,f"summary-{titleAsFile}.md")
 
     episode = load_the_podcast_episode_data(outputPath, podcastName, episodeTitle)
+
+
 
     summary = ""
     with open(summaryFilePath,"r") as file:

@@ -9,7 +9,7 @@ from markdownReporter import generateMarkdownSummaryReport
 from reports.pandoc_report_generator import PandocReportGenerator
 from reports.report_time_span_defn import ReportTimeSpanDefn
 from rss_feed_scanner import RssFeedScanner
-from summarise_using_ollama import summarizeTranscriptFile
+from summarise_using_ollama import summarizeTranscriptFile, adhoc_summary
 from summarization import SummarizeQueue
 from summarize_queue_processor import SummarizeQueueProcessor
 
@@ -40,6 +40,15 @@ def post_regenerate_episode_markdown_summary(podcast_path, episode_path):
         return jsonify({"message": "Regenerated Markdown Summary"}), 200
     else:
         return jsonify({"message": f"Could not find episode to regenerate {fileToRead}"}), 404
+
+@api_bp.route('/regeneratesummarytype/<summary_type>/<podcast_path>/<episode_path>', methods=['POST'])
+def post_regenerate_summary(summary_type,podcast_path, episode_path):
+    summary_path = os.path.join(rssList.output_path, filenameify(podcast_path), filenameify(episode_path), "intermediate-summary.md")
+    if os.path.exists(summary_path):
+        adhoc_summary(os.path.dirname(summary_path), [summary_type])
+        return jsonify({"message": f"Regenerated {summary_type} Summary"}), 200
+    else:
+        return jsonify({"message": f"Could not find episode with intermediate summary to regenerate {summary_path}"}), 404
 
 @api_bp.route('/processall', methods=['POST'])
 def post_process_all():

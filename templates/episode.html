@@ -36,12 +36,18 @@
 <h2>Summary</h2>
 
 <button id="regenerate">Regenerate Summary</button><br/>
+<button id="regenerateoverview">Regenerate Overview Summary</button><br/>
 <button id="regeneratemarkdown">Regenerate Markdown Summary</button><br/>
 
 <script>
     document.getElementById('regenerate').addEventListener('click', function() {
         var button = this;
         postCallFromButton(button, '/api/regeneratesummary/{{podcast_path}}/{{episode_path}}', "");
+    });
+
+    document.getElementById('regenerateoverview').addEventListener('click', function() {
+        var button = this;
+        postCallFromButton(button, '/api/regeneratesummarytype/overview/{{podcast_path}}/{{episode_path}}', "");
     });
 
     document.getElementById('regeneratemarkdown').addEventListener('click', function() {

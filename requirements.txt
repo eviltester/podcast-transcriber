@@ -1,7 +1,6 @@
 openai-whisper~=20250625
 pyyaml~=6.0.2
 feedparser~=6.0.11
-torch~=2.7.1
 transformers~=4.53.0
 langchain~=0.3.26
 tiktoken
@@ -15,3 +14,10 @@ ollama~=0.5.1
 markdown-it-py~=3.0.0
 requests~=2.32.4
 yt-dlp~=2025.7.21
+# may need to install torch with cuda manually
+# https://pytorch.org/get-started/locally/#windows-python
+# e.g pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu129 --force-reinstall --no-cache
+# https://developer.nvidia.com/cuda-downloads
+# https://docs.nvidia.com/deeplearning/cudnn/installation/latest/windows.html
+# tried whisperx but kept complaining about cudnn dlls missing - gave up after a few hours of web dead ends
+torch~=2.8.0

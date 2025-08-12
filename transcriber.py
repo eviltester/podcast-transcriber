@@ -3,6 +3,7 @@ import os
 import time
 from textoutput import output_raw_text_to_file, output_formatted_text_with_line_gaps, output_error_as_transcription
 from srtoutput import output_srt_file
+#import whisperx
 
 # official whisper output utils
 from whisper.utils import get_writer
@@ -21,38 +22,26 @@ class Transcriber():
     # TODO: if there is an error then the job should go in an error queue to allow recovery or retry
     def transcribe(self, inputAudioFile, outputFolder, outputFileName, whisper_model="base"):
 
+        # whisperx - https://github.com/m-bain/whisperX?tab=readme-ov-file
+        device = "cuda"
+        batch_size = 16 # reduce if low on GPU mem
+        compute_type = "float16" # change to "int8" if low on GPU mem (may reduce accuracy)
+
         # loading the model takes time so only do this once, and only do when transcribing
         if(self.initialized_model_name != whisper_model or self.initialized_model == None):
             # Process the audio file
             modelLoadingStartTime = time.time()
             print("Loading Whisper Model " + whisper_model)
             self.initialized_model_name = whisper_model
+            # whisper
             self.initialized_model = whisper.load_model(whisper_model)
+            # whisper x
+            # self.initialized_model =whisperx.load_model("large-v2", device, compute_type=compute_type)
             modelLoadingEndTime = time.time()
             print('TIME: to load model - ', modelLoadingEndTime - modelLoadingStartTime, 'seconds')
 
         outputFileFolder = os.path.join(outputFolder, outputFileName)
 
-        # old versions of the app would write directly to the folder
-        # fix that here
-        looseFiles = [f for f in os.listdir(outputFolder) if os.path.isfile(os.path.join(outputFolder, f))]
-        for looseFile in looseFiles:
-            print("Migration: moving file to subfolder " + looseFile)
-            fullName = os.path.basename(looseFile)
-            fileName = os.path.splitext(fullName)
-            fileNameNoBase = fileName[0]
-            # remove the -base from end
-            if(fileNameNoBase.endswith(".blob")):
-                fileNameNoBase = fileNameNoBase[:-5]
-            if(fileNameNoBase.endswith("-base")):
-                fileNameNoBase = fileNameNoBase[:-5]
-            # create the folder    
-            looseOutputFileFolder = os.path.join(outputFolder, fileNameNoBase)
-            if not os.path.exists(looseOutputFileFolder):
-                os.makedirs(looseOutputFileFolder)
-            # move the file
-            os.replace(os.path.join(outputFolder,looseFile), os.path.join(looseOutputFileFolder, fullName))
-            
 
         # output all the files to a folder
         if not os.path.exists(outputFileFolder):
@@ -77,12 +66,26 @@ class Transcriber():
         - https://lablab.ai/t/whisper-transcription-and-speaker-identification
         - https://colab.research.google.com/drive/1V-Bt5Hm2kjaDb4P1RyMSswsDKyrzc2-3?usp=sharing#scrollTo=O0_tup8RAyBy
         - https://ramsrigoutham.medium.com/openais-whisper-7-must-know-libraries-and-add-ons-built-on-top-of-it-10825bd08f76
+        
+        see also https://github.com/SYSTRAN/faster-whisper
+        
+        https://www.reddit.com/r/LocalLLaMA/comments/1brqwun/i_compared_the_different_open_source_whisper/
+        
         '''
         print("Transcribing File " + inputAudioFile)
         transcribeStartTime  = time.time()
 
         try:
+            # whisper x
+            # audio = whisperx.load_audio(inputAudioFile)
+            # result = self.initialized_model.transcribe(audio, batch_size=batch_size)
+            #model_a, metadata = whisperx.load_align_model(language_code=result["language"], device=device)
+            #result = whisperx.align(result["segments"], model_a, metadata, audio, device, return_char_alignments=False)
+
+            # whisper
             result = self.initialized_model.transcribe(inputAudioFile)
+
+
             transcribeEndTime  = time.time()
             print('TIME: to transcribe - ', transcribeEndTime - transcribeStartTime, 'seconds')
 

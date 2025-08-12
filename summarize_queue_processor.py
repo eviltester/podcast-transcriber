@@ -26,6 +26,9 @@ class SummarizeQueueProcessor:
             self.summarize_queue.save_caches()
             next_summary = self.summarize_queue.get_next()
 
+    def adhoc_summary(self, podcast_name, episode_title):
+        return
+
 
     def find_podcast_in_list(self, podcast_name):
         if self.podcastList is not None:
