@@ -1,6 +1,7 @@
 # pyyaml just for printing for debugging convenience
 import os
-from rss import RssFeed, RssListReader, RssList
+from podcastrss.RssFeed import RssFeed
+from podcastrss.RssList import RssList
 
 #
 # Main App code
@@ -150,6 +151,17 @@ rssList.feeds.append(RssFeed("Goto tech","https://feeds.buzzsprout.com/1714721.r
 
 #rssList.feeds.append(RssFeed("EvilTester Videos - Youtube","https://www.youtube.com/feeds/videos.xml?channel_id=UCCAwIFH3FRVD9GBuVRW_mUw",["youtube"], "https://www.youtube.com/@eviltester", [], "2025 07 01 00:00:01 UTC"))
 
+# TODO: persist the path config and the name in the config file and re-load that as well
+# save the feeds - temporarily and load to check
+# feeds_config_path = os.getcwd()
+# feeds_file_path = os.path.join(feeds_config_path,"feeds_config.json")
+# rssList.save_feeds_to_json(feeds_file_path)
+# rssList = RssList("podcasts")
+# rssList.set_config_path(os.path.join(outputPath, "podcasts-config"))
+# rssList.set_cache_path(outputPath)
+# rssList.set_download_path(downloadPath)
+# rssList.set_output_path(outputPath)
+# rssList.load_feeds_from_json(feeds_file_path)
 
 
 print("\n")
