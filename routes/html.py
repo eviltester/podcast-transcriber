@@ -8,7 +8,11 @@ from downloads import filenameify
 from podcast_episode import load_the_podcast_episode_data
 from markdown_it import MarkdownIt
 
+from podcastrss.RssList import RssList
+from routes.api import define_rssList
 from summarization import SummarizeQueue
+import random
+
 
 html_bp = Blueprint('html', __name__)
 
@@ -52,6 +56,11 @@ def get_recent_episodes(for_category=None):
     done_count = len(summarize_queue.done)
     # show max 30 most recent
     recent_limit = 30
+
+    # don't process anything if there is nothing to process
+    if done_count==0:
+        done_count=-1
+
     while recent_limit > 0 and done_count>=0:
 
         done_count = done_count-1
@@ -193,7 +202,20 @@ def get_podcasts():
         categories = rss_list.get_category_names()
 
     feeds = get_feeds_list()
-    return render_template('podcasts.html', feeds=feeds, categories = categories)
+
+    pres = []
+    # output markdown to log
+    if not request.args.get('markdown') is None:
+        pres.append(feeds_list_as_markdown(feeds))
+
+    names = ""
+    for a_feed in feeds:
+        names += f"- {a_feed.feedname}\n"
+
+    if not request.args.get('markdown') is None:
+        pres.append(names)
+
+    return render_template('podcasts.html', feeds=feeds, categories = categories, pres=pres)
 
 
 def feeds_list_as_markdown(feedslist):
@@ -321,3 +343,31 @@ def get_episode(podcastname, episodetitle):
         episode_path = episodetitle,
         feed = feed
     )
+
+
+@html_bp.route('/feed/load', methods=['GET','POST'])
+def feed_management():
+    if request.method == 'POST':
+        file = request.files['filepath']
+        filename = file.filename
+        random_name = f"should-be-replaced{random.random()}"
+        rss_list = RssList(random_name)
+        filecontent = io.StringIO(file.read().decode('utf-8')).getvalue()
+        rss_list.load_feeds_from_json_blob(filecontent)
+
+        if rss_list.name == random_name:
+            print(f"Failed to load: {file}")
+            response_html = f"<p>Failed to load {filename}</p>"
+        else:
+            set_rsslist(rss_list)
+            define_rssList(rss_list)
+            feed_info = feeds_list_as_markdown(rss_list.feeds)
+            response_html = f"<p>Loaded {rss_list.name} from {filename}</p><div><pre>{feed_info}</pre></div>"
+
+        return render_template(
+            'feed-management.html',
+            response_html=response_html
+        )
+
+    else:
+        return render_template('feed-management.html')

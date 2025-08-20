@@ -23,13 +23,15 @@
 </ul>
 
 <div>
-    <h2>Recent Episodes</h2>
-    {{ recent_episodes_html|safe }}
+    {% if recent_episodes_html %}
+        <h2>Recent Episodes</h2>
+        {{ recent_episodes_html|safe }}
+    {% endif %}
 </div>
 
 {% if pres %}
 {% else %}
-    <a href="/category/{{category_name}}?markdown">Show Markdown</a>
+    <a href="/podcasts?markdown">Show Markdown</a>
 {% endif %}
 
 {% for pre in pres %}

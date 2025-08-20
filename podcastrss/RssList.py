@@ -61,15 +61,63 @@ class RssList:
 
         return sorted(list(categories_set))
 
+    def to_dict(self):
+        """Convert the Rss Feed List object to a dictionary for JSON serialization."""
+        feeds_output_as_dict_array = [feed.to_dict() for feed in self.feeds]
+        return {
+            'name': self.name,
+            'config_path': self.config_path,
+            'cache_path': self.cache_path,
+            'download_path': self.download_path,
+            'output_path': self.output_path,
+            'feeds': feeds_output_as_dict_array
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        """Create an RssList object from a dictionary loaded from JSON."""
+        # Create instance with required parameters
+        instance = cls(
+            name=data['name'],
+
+        )
+        instance.set_config_path(data['config_path'])
+        instance.set_cache_path(data['cache_path'])
+        instance.set_download_path(data['download_path'])
+        instance.set_output_path(data['output_path'])
+
+        return instance
+
     def save_feeds_to_json(self, filepath):
         """Save a list of RssFeed objects to a single JSON file."""
         try:
-            feeds_data = [feed.to_dict() for feed in self.feeds]
             with open(filepath, 'w', encoding='utf-8') as f:
-                json.dump(feeds_data, f, indent=2, ensure_ascii=False)
+                json.dump(self.to_dict(), f, indent=2, ensure_ascii=False)
             print(f"{len(self.feeds)} RssFeeds saved to {filepath}")
         except Exception as e:
             print(f"Error saving feeds to JSON: {e}")
+
+    def set_from_feeds_data(self,feeds_data):
+        self.name=feeds_data['name']
+        self.set_config_path(feeds_data['config_path'])
+        self.set_cache_path(feeds_data['cache_path'])
+        self.set_download_path(feeds_data['download_path'])
+        self.set_output_path(feeds_data['output_path'])
+
+        self.feeds = []
+        for feed_data in feeds_data['feeds']:
+            feed = RssFeed.from_dict(feed_data)
+            self.feeds.append(feed)
+
+    def load_feeds_from_json_blob(self, blob):
+        try:
+            feeds_data = json.loads(blob)
+            self.set_from_feeds_data(feeds_data)
+            return self.feeds
+        except Exception as e:
+            print(f"Error loading feeds from JSON: {e}")
+            return []
+
 
     def load_feeds_from_json(self, filepath):
         """Load a list of RssFeed objects from a single JSON file."""
@@ -77,8 +125,15 @@ class RssList:
             with open(filepath, 'r', encoding='utf-8') as f:
                 feeds_data = json.load(f)
 
+            # TODO: a reset mechanism
+            self.name=feeds_data['name']
+            self.set_config_path(feeds_data['config_path'])
+            self.set_cache_path(feeds_data['cache_path'])
+            self.set_download_path(feeds_data['download_path'])
+            self.set_output_path(feeds_data['output_path'])
+
             self.feeds = []
-            for feed_data in feeds_data:
+            for feed_data in feeds_data['feeds']:
                 feed = RssFeed.from_dict(feed_data)
                 self.feeds.append(feed)
 
@@ -94,3 +149,19 @@ class RssList:
         except Exception as e:
             print(f"Error loading feeds from JSON: {e}")
             return []
+
+    def make_dirs(self):
+        self.make_dir(self.config_path)
+        self.make_dir(self.download_path)
+        self.make_dir(self.cache_path)
+        self.make_dir(self.output_path)
+
+    def make_dir(self, dir):
+        try:
+            os.makedirs(dir)
+        except FileExistsError:
+            # directory already exists
+            print(f"Configured Path Already Exists {dir}")
+            pass
+
+
