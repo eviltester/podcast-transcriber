@@ -116,7 +116,12 @@ def index():
     recent_episodes = get_recent_episodes()
     recent_episodes_html = get_episode_list_html(recent_episodes, True)
 
-    return render_template('index.html', html_list="", recent_episodes_html = recent_episodes_html)
+    return render_template(
+        'index.html',
+        html_list="",
+        recent_episodes_html = recent_episodes_html,
+        feeds_name=rss_list.name
+    )
 
 @html_bp.route('/ollamaexec', methods=['GET','POST'])
 def post_process_with_ollama():
@@ -195,7 +200,7 @@ def post_process_with_ollama():
     else:
         return render_template('ollama.html')
 
-@html_bp.route('/podcasts', methods=['GET'])
+@html_bp.route('/feeds', methods=['GET'])
 def get_podcasts():
     categories = []
     if not rss_list is None:
@@ -215,7 +220,7 @@ def get_podcasts():
     if not request.args.get('markdown') is None:
         pres.append(names)
 
-    return render_template('podcasts.html', feeds=feeds, categories = categories, pres=pres)
+    return render_template('feeds.html', feeds=feeds, categories = categories, pres=pres, feeds_name = rss_list.name)
 
 
 def feeds_list_as_markdown(feedslist):
@@ -227,7 +232,7 @@ def feeds_list_as_markdown(feedslist):
     return md
 
 @html_bp.route('/category/<category_name>', methods=['GET'])
-def get_category_podcasts(category_name):
+def get_feeds_for_category(category_name):
     categories = []
     if not rss_list is None:
         categories = rss_list.get_category_names()
@@ -251,12 +256,13 @@ def get_category_podcasts(category_name):
     recent_episodes_html = get_episode_list_html(recent_episodes, True)
 
     return render_template(
-        'podcasts.html',
+        'feeds.html',
         feeds=filtered_feeds,
         categories = categories,
         category_name = category_name.capitalize(),
         pres = pres,
-        recent_episodes_html = recent_episodes_html
+        recent_episodes_html = recent_episodes_html,
+        feeds_name = rss_list.name
     )
 
 def get_episode_list_html(episodes, include_podcast_name):
@@ -276,8 +282,8 @@ def get_episode_list_html(episodes, include_podcast_name):
 
     return html
 
-@html_bp.route('/podcasts/<name>', methods=['GET'])
-def get_podcast(name):
+@html_bp.route('/feeds/<name>', methods=['GET'])
+def get_feed(name):
 
     feed = None
     if not rss_list is None:
@@ -298,11 +304,11 @@ def get_podcast(name):
                     if an_episode != None:
                         episodes[feed.url_safe_feedname + "/" + os.path.basename(a_file)] = an_episode
         else:
-            message_html = "<p>Podcast not found on disk. Perhaps it is still processing?"
+            message_html = "<p>Feed not found on disk. Perhaps it is still processing?"
 
     episode_list = get_episode_list_html(episodes, False)
 
-    return render_template('podcast.html', feed=feed, episode_list=episode_list, message_html= message_html)
+    return render_template('feed.html', feed=feed, episode_list=episode_list, message_html= message_html)
 
 @html_bp.route('/episode/<podcastname>/<episodetitle>', methods=['GET'])
 def get_episode(podcastname, episodetitle):

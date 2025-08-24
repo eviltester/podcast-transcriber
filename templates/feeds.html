@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<h1>{{category_name}} Rss Feeds</h1>
+<h1>{{category_name}} {{feeds_name}} Rss Feeds</h1>
 
 <h2>Categories</h2>
 <ul>
@@ -15,7 +15,7 @@
 
 <ul>
     {% for feed in feeds %}
-    <li><a href="/podcasts/{{ feed.url_safe_feedname }}">{{ feed.feedname }}</a></li>
+    <li><a href="/feeds/{{ feed.url_safe_feedname }}">{{ feed.feedname }}</a></li>
         <ul>
             <li><a href="{{ feed.homeUrl }}" target="_blank">{{ feed.homeUrl }}</a></li>
         </ul>

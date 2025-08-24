@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<button id="doAllTheWork">Process New Podcasts</button><br/>
+<button id="doAllTheWork">Process New - {{feeds_name}}</button><br/>
 <button id="markdownReportGeneration">Generate Markdown Reports</button>
 
 <script>
@@ -21,6 +21,8 @@
 <div>
     {{ html_list|safe }}
 </div>
+
+<h1>{{feeds_name}}</h1>
 
 <div>
     <h2>Recent Episodes</h2>
